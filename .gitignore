@@ -1,0 +1,42 @@
+# Rails
+backend/*.rbc
+backend/capybara-*.html
+backend/.rspec
+backend/db/*.sqlite3
+backend/db/*.sqlite3-journal
+backend/db/*.sqlite3-[0-9]*
+backend/public/system
+backend/coverage/
+backend/spec/tmp
+backend/tmp/
+backend/log/
+backend/.byebug_history
+backend/config/master.key
+backend/config/credentials.yml.enc
+backend/storage/
+backend/.env
+backend/vendor/bundle
+
+# React
+frontend/node_modules/
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Docker
+mysql/data/
+
+# System
+.DS_Store
+*.swp
+*.swo
+*~
+.project
+.idea
+.secret
+.vscode/
