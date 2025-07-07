@@ -21,22 +21,12 @@ development:
   <<: *default
   database: aquarium_visit_log_development
 
-test:
-  <<: *default
-  database: aquarium_visit_log_test
-
-production:
-  <<: *default
-  database: aquarium_visit_log_production
-  username: aquarium_visit_log
-  password: <%= ENV["AQUARIUM_VISIT_LOG_DATABASE_PASSWORD"] %>
-
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: app_test
+  database: aquarium_visit_log_test
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -60,6 +50,6 @@ test:
 #
 production:
   <<: *default
-  database: app_production
-  username: app
-  password: <%= ENV["APP_DATABASE_PASSWORD"] %>
+  database: aquarium_visit_log_production
+  username: aquarium_visit_log
+  password: <%= ENV["AQUARIUM_VISIT_LOG_DATABASE_PASSWORD"] %>
