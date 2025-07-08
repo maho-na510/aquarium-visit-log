@@ -30,6 +30,7 @@ export interface Aquarium {
     autumnWinter?: string;
     weekday?: string;
     holiday?: string;
+    recentVisits?: RecentVisit[];
   };
   admissionFee?: {
     adult?: number;
@@ -78,6 +79,13 @@ export interface Visit {
   videoCount?: number;
   createdAt: string;
   updatedAt: string;
+}
+export interface RecentVisit {
+  id: number;
+  userName: string;
+  visitedAt: string;
+  rating?: number;
+  photoCount: number;
 }
 
 export interface VisitForm {
