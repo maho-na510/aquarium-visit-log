@@ -1,4 +1,3 @@
-# 日本の主要な水族館データ
 aquariums_data = [
   {
     name: "沖縄美ら海水族館",
@@ -118,7 +117,7 @@ puts "Created #{Aquarium.count} aquariums"
 # テストユーザーを作成
 test_user = User.find_or_create_by!(email: "test@example.com") do |user|
   user.name = "テストユーザー"
-  user.username = "testuser"  # usernameを追加
+  user.username = "testuser"
   user.password = "password123"
 end
 
