@@ -45,6 +45,11 @@ export interface Aquarium {
   inWishlist: boolean;
   createdBy?: number;
   latestPhotoUrl?: string;
+  photos?: AquariumPhoto[];
+}
+export interface AquariumPhoto {
+  id: number;
+  url: string;
 }
 
 export interface AquariumSummary {

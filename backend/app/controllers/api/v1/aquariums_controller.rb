@@ -3,8 +3,9 @@
 class Api::V1::AquariumsController < Api::V1::BaseController
   skip_before_action :authenticate_user!, only: [:index, :show, :search, :nearby]
 
-  before_action :set_aquarium, only: [:show, :update, :destroy]
-  before_action :require_admin!, only: [:create, :update, :destroy]
+  before_action :set_aquarium, only: [:show, :update, :destroy, :upload_photos, :destroy_photo]
+  before_action :require_admin!, only: [:create, :update, :destroy, :upload_photos, :destroy_photo]
+
 
   # GET /api/v1/aquariums
   def index
@@ -95,6 +96,42 @@ class Api::V1::AquariumsController < Api::V1::BaseController
       }
     }
   end
+
+  # POST /api/v1/aquariums/:id/upload_photos
+  def upload_photos
+    if params[:photos].blank?
+      return render json: { error: "photos が必要です" }, status: :bad_request
+    end
+
+    params[:photos].each do |photo|
+      @aquarium.photos.attach(photo)
+    end
+
+    visited_ids, wishlist_ids = user_relation_ids
+    render json: ::AquariumSerializer.new(
+      @aquarium,
+      current_user: current_user_or_nil,
+      visited_ids: visited_ids,
+      wishlist_ids: wishlist_ids
+    ).as_detail_json
+  end
+
+  # DELETE /api/v1/aquariums/:id/photos/:photo_id
+  def destroy_photo
+    attachment = @aquarium.photos.attachments.find_by(id: params[:photo_id])
+    return render json: { error: "写真が見つかりません" }, status: :not_found unless attachment
+
+    attachment.purge
+
+    visited_ids, wishlist_ids = user_relation_ids
+    render json: ::AquariumSerializer.new(
+      @aquarium,
+      current_user: current_user_or_nil,
+      visited_ids: visited_ids,
+      wishlist_ids: wishlist_ids
+    ).as_detail_json
+  end
+
 
   private
 

@@ -13,7 +13,12 @@ Rails.application.routes.draw do
           get :search
           get :nearby
         end
+        member do
+          post :upload_photos
+          delete "photos/:photo_id", to: "aquariums#destroy_photo"
+        end
       end
+
 
       resources :visits do
         member do

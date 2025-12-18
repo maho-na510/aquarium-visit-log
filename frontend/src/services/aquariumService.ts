@@ -14,6 +14,10 @@ interface RankingsResponse {
 }
 
 export const aquariumService = {
+  // =====================
+  // 基本取得系
+  // =====================
+
   // 水族館一覧を取得
   async getAquariums(params?: SearchParams): Promise<AquariumsResponse> {
     const response = await apiClient.get('/aquariums', { params });
@@ -25,6 +29,10 @@ export const aquariumService = {
     const response = await apiClient.get(`/aquariums/${id}`);
     return response.data;
   },
+
+  // =====================
+  // CRUD（admin）
+  // =====================
 
   // 水族館を作成
   async createAquarium(data: Partial<Aquarium>): Promise<Aquarium> {
@@ -43,23 +51,65 @@ export const aquariumService = {
     await apiClient.delete(`/aquariums/${id}`);
   },
 
+  // =====================
+  // 写真アップロード（admin）
+  // =====================
+
+  // 写真を追加
+  async uploadPhotos(aquariumId: number, photos: File[]): Promise<Aquarium> {
+    const formData = new FormData();
+    photos.forEach((photo) => {
+      formData.append('photos[]', photo);
+    });
+
+    const response = await apiClient.post(
+      `/aquariums/${aquariumId}/upload_photos`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
+
+    return response.data;
+  },
+
+  // 写真を削除
+  async deletePhoto(aquariumId: number, photoId: number): Promise<Aquarium> {
+    const response = await apiClient.delete(
+      `/aquariums/${aquariumId}/photos/${photoId}`
+    );
+    return response.data;
+  },
+
+  // =====================
+  // 検索・地図
+  // =====================
+
   // 水族館を検索
   async searchAquariums(query: string, exhibit?: string): Promise<AquariumsResponse> {
     const response = await apiClient.get('/aquariums/search', {
-      params: { q: query, exhibit }
+      params: { q: query, exhibit },
     });
     return response.data;
   },
 
   // 近くの水族館を取得
-  async getNearbyAquariums(lat: number, lng: number, distance?: number): Promise<{ aquariums: Aquarium[] }> {
+  async getNearbyAquariums(
+    lat: number,
+    lng: number,
+    distance?: number
+  ): Promise<{ aquariums: Aquarium[] }> {
     const response = await apiClient.get('/aquariums/nearby', {
-      params: { lat, lng, distance }
+      params: { lat, lng, distance },
     });
     return response.data;
   },
 
-  // 訪問数ランキングを取得
+  // =====================
+  // ランキング
+  // =====================
+
+  // 訪問数ランキング
   async getMostVisitedRanking(params?: {
     period?: 'all' | 'year' | 'month';
     year?: number;
@@ -70,7 +120,7 @@ export const aquariumService = {
     return response.data;
   },
 
-  // 評価ランキングを取得
+  // 評価ランキング
   async getHighestRatedRanking(params?: {
     minVisits?: number;
     prefecture?: string;
@@ -78,5 +128,5 @@ export const aquariumService = {
   }): Promise<RankingsResponse> {
     const response = await apiClient.get('/rankings/highest_rated', { params });
     return response.data;
-  }
+  },
 };

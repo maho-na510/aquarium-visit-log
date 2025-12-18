@@ -32,7 +32,9 @@ class Api::V1::SessionsController < ApplicationController
         user: {
           id: current_user.id,
           name: current_user.name,
-          email: current_user.email
+          username: current_user.username,
+          email: current_user.email,
+          role: current_user.role
         }
       }
     else
