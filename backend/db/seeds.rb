@@ -119,6 +119,7 @@ test_user = User.find_or_create_by!(email: "test@example.com") do |user|
   user.name = "テストユーザー"
   user.username = "testuser"
   user.password = "password123"
+  user.role = "admin"
 end
 
 puts "Created test user: #{test_user.email}"

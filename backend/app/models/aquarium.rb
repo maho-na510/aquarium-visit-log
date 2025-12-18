@@ -2,6 +2,7 @@ class Aquarium < ApplicationRecord
   has_many :visits, dependent: :destroy
   has_many :wishlist_items, dependent: :destroy
   has_many :visitors, through: :visits, source: :user
+  has_many_attached :photos
   
   validates :name, presence: true
   validates :address, presence: true
