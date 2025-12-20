@@ -10,45 +10,48 @@ class AquariumSerializer
     @wishlist_ids = wishlist_ids
   end
 
-  def as_index_json
-    {
-      id: @aquarium.id,
-      name: @aquarium.name,
-      address: @aquarium.address,
-      prefecture: @aquarium.prefecture,
-      latitude: @aquarium.latitude,
-      longitude: @aquarium.longitude,
-      average_rating: @aquarium.average_rating,
-      visit_count: @aquarium.visit_count,
-      visited: visited?,
-      in_wishlist: in_wishlist?,
-      photo_urls: photo_urls.take(3),
-      latest_photo_url: latest_photo_url
-    }
-  end
+def as_index_json
+  {
+    id: @aquarium.id,
+    name: @aquarium.name,
+    address: @aquarium.address,
+    prefecture: @aquarium.prefecture,
+    latitude: @aquarium.latitude,
+    longitude: @aquarium.longitude,
+    average_rating: @aquarium.average_rating,
+    visit_count: @aquarium.visit_count,
+    visited: visited?,
+    in_wishlist: in_wishlist?,
+    photo_urls: photo_urls.take(3),
+    photos: photos_json(limit: 3),
+    latest_photo_url: latest_photo_url
+  }
+end
 
-  def as_detail_json
-    {
-      id: @aquarium.id,
-      name: @aquarium.name,
-      description: @aquarium.description,
-      address: @aquarium.address,
-      prefecture: @aquarium.prefecture,
-      latitude: @aquarium.latitude,
-      longitude: @aquarium.longitude,
-      phone_number: @aquarium.phone_number,
-      website: @aquarium.website,
-      opening_hours: @aquarium.opening_hours,
-      admission_fee: @aquarium.admission_fee,
-      average_rating: @aquarium.average_rating,
-      visit_count: @aquarium.visit_count,
-      visited: visited?,
-      in_wishlist: in_wishlist?,
-      created_by: @aquarium.user_id,
-      photo_urls: photo_urls,
-      recent_visits: recent_visits_json
-    }
-  end
+def as_detail_json
+  {
+    id: @aquarium.id,
+    name: @aquarium.name,
+    description: @aquarium.description,
+    address: @aquarium.address,
+    prefecture: @aquarium.prefecture,
+    latitude: @aquarium.latitude,
+    longitude: @aquarium.longitude,
+    phone_number: @aquarium.phone_number,
+    website: @aquarium.website,
+    opening_hours: @aquarium.opening_hours,
+    admission_fee: @aquarium.admission_fee,
+    average_rating: @aquarium.average_rating,
+    visit_count: @aquarium.visit_count,
+    visited: visited?,
+    in_wishlist: in_wishlist?,
+    created_by: @aquarium.user_id,
+    photo_urls: photo_urls,
+    photos: photos_json,
+    recent_visits: recent_visits_json
+  }
+end
+
 
   private
 
@@ -70,7 +73,21 @@ class AquariumSerializer
     return [] unless @aquarium.photos.attached?
 
     @aquarium.photos.map do |photo|
-      rails_blob_path(photo, only_path: true)
+      rails_blob_url(photo, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http')
+    end
+  end
+
+  def photos_json(limit: nil)
+    return [] unless @aquarium.photos.attached?
+
+    rel = @aquarium.photos.attachments.includes(:blob).order(created_at: :asc)
+    rel = rel.limit(limit) if limit
+
+    rel.map do |attachment|
+      {
+        id: attachment.id,
+        url: rails_blob_url(attachment, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http')
+      }
     end
   end
 
@@ -78,9 +95,13 @@ class AquariumSerializer
     visit = @aquarium.visits.joins(:photos_attachments).order(visited_at: :desc).first
     return nil unless visit&.photos&.attached?
 
-    rails_blob_path(visit.photos.first, only_path: true)
+    rails_blob_url(visit.photos.first, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http')
   rescue StandardError
     nil
+  end
+
+  def default_url_options
+    Rails.application.routes.default_url_options
   end
 
   def recent_visits_json

@@ -24,6 +24,7 @@ import {
   ListItemAvatar,
   Avatar,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   LocationOn as LocationIcon,
   Phone as PhoneIcon,
@@ -42,9 +43,42 @@ import {
 import { aquariumService } from '../services/aquariumService';
 import AquariumPhotoSection from '../components/aquarium/AquariumPhotoSection';
 import { useMe } from '../hooks/useMe';
-import Grid from '@mui/material/Grid';
+import apiClient from '../services/api';
 
-export default function AquariumDetail() {
+type OgImageResponse = {
+  og_image_url?: string | null;
+  ogImageUrl?: string | null;
+  og_image?: string | null;
+  ogImage?: string | null;
+};
+
+// Helper to convert relative URLs to absolute
+function getApiOrigin(): string {
+  const base = (apiClient.defaults.baseURL || '').trim();
+  if (!base) return window.location.origin;
+
+  try {
+    return new URL(base).origin;
+  } catch {
+    return window.location.origin;
+  }
+}
+
+function toAbsoluteUrl(maybeUrl: string | null | undefined): string | null {
+  if (!maybeUrl) return null;
+
+  // すでに絶対URLならそのまま
+  if (/^https?:\/\//i.test(maybeUrl)) return maybeUrl;
+
+  // "/rails/..." のような相対なら backend origin を付ける
+  if (maybeUrl.startsWith('/')) {
+    return `${getApiOrigin()}${maybeUrl}`;
+  }
+
+  return maybeUrl;
+}
+
+export default function AquariumDetailPage() {
   const { id } = useParams<{ id: string }>();
   const aquariumId = Number(id);
   const navigate = useNavigate();
@@ -53,35 +87,120 @@ export default function AquariumDetail() {
   const [openVisitDialog, setOpenVisitDialog] = useState(false);
   const [inWishlist, setInWishlist] = useState(false);
 
-  // ★ me（admin判定用）
   const { data: meData } = useMe();
   const isAdmin = useMemo(() => meData?.user?.role === 'admin', [meData]);
 
   // 水族館詳細データを取得
-  const { data: aquarium, isLoading, error } = useQuery({
+  const {
+    data: aquarium,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['aquarium', aquariumId],
     queryFn: () => aquariumService.getAquarium(aquariumId),
     enabled: Number.isFinite(aquariumId),
   });
 
-  // 初期値設定（行きたいリスト）
+  // 公式サイトOGP画像（ヘッダー用フォールバック）
+  const { data: ogData } = useQuery<OgImageResponse>({
+    queryKey: ['aquariumOgImage', aquariumId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/aquariums/${aquariumId}/og_image`, {
+        credentials: 'include',
+      });
+      if (!res.ok) return { og_image_url: null };
+      return (await res.json()) as OgImageResponse;
+    },
+    enabled: Number.isFinite(aquariumId),
+    staleTime: 1000 * 60 * 60, // 1h
+  });
+
+  const ogImageUrl =
+    ogData?.ogImageUrl ??
+    ogData?.og_image_url ??
+    ogData?.og_image ??
+    ogData?.ogImage ??
+    null;
+
+  const headerImageUrl = toAbsoluteUrl(
+    (aquarium as any)?.photos?.[0]?.url ||
+    (aquarium as any)?.photoUrls?.[0] ||
+    (aquarium as any)?.photo_urls?.[0] ||
+    ogImageUrl
+  );  
+
+  // キーゆれ吸収（snake/camel混在）
+  const latestPhotoUrl =
+    (aquarium as any)?.latestPhotoUrl ??
+    (aquarium as any)?.latest_photo_url ??
+    null;
+
+  //const headerImageUrl = latestPhotoUrl || ogImageUrl || null;
+
+  const averageRating =
+    (aquarium as any)?.averageRating ??
+    (aquarium as any)?.average_rating ??
+    0;
+
+  const visitCount =
+    (aquarium as any)?.visitCount ??
+    (aquarium as any)?.visit_count ??
+    0;
+
+  const visited =
+    (aquarium as any)?.visited ??
+    false;
+
+  const aquariumName =
+    (aquarium as any)?.name ?? '';
+
+  const prefecture =
+    (aquarium as any)?.prefecture ?? '';
+
+  const address =
+    (aquarium as any)?.address ?? '';
+
+  const phoneNumber =
+    (aquarium as any)?.phoneNumber ??
+    (aquarium as any)?.phone_number ??
+    null;
+
+  const website =
+    (aquarium as any)?.website ?? null;
+
+  const openingHours =
+    (aquarium as any)?.openingHours ??
+    (aquarium as any)?.opening_hours ??
+    null;
+
+  const admissionFee =
+    (aquarium as any)?.admissionFee ??
+    (aquarium as any)?.admission_fee ??
+    null;
+
+  const description =
+    (aquarium as any)?.description ?? null;
+
+  const recentVisits =
+    (aquarium as any)?.recentVisits ??
+    (aquarium as any)?.recent_visits ??
+    [];
+
+  // wishlist 状態（snake/camel混在対応）
   useEffect(() => {
-    if (aquarium) {
-      setInWishlist(Boolean((aquarium as any).inWishlist));
-    }
+    if (!aquarium) return;
+    const next =
+      (aquarium as any)?.inWishlist ??
+      (aquarium as any)?.in_wishlist ??
+      false;
+    setInWishlist(Boolean(next));
   }, [aquarium]);
 
-  const handleBack = () => {
-    navigate('/aquariums');
-  };
-
-  const handleAddVisit = () => {
-    // TODO: 訪問記録追加ページへ遷移
-    setOpenVisitDialog(true);
-  };
+  const handleBack = () => navigate('/aquariums');
+  const handleAddVisit = () => setOpenVisitDialog(true);
 
   const handleToggleWishlist = () => {
-    // TODO: API呼び出し
+    // TODO: API繋ぐときはここで叩く
     setInWishlist((v) => !v);
   };
 
@@ -105,23 +224,18 @@ export default function AquariumDetail() {
       <Box>
         <Skeleton variant="rectangular" height={300} sx={{ mb: 3 }} />
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 8}}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Skeleton variant="text" height={40} />
             <Skeleton variant="text" />
             <Skeleton variant="text" />
           </Grid>
-          <Grid size={{ xs: 12, md: 4}}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Skeleton variant="rectangular" height={200} />
           </Grid>
         </Grid>
       </Box>
     );
   }
-
-  const recentVisits =
-    (aquarium as any).recentVisits ||
-    (aquarium as any).openingHours?.recentVisits ||
-    [];
 
   return (
     <Box>
@@ -135,14 +249,13 @@ export default function AquariumDetail() {
           justifyContent: 'center',
           position: 'relative',
           mb: 3,
-          backgroundImage: (aquarium as any).latestPhotoUrl ? `url(${(aquarium as any).latestPhotoUrl})` : 'none',
+          backgroundImage: headerImageUrl ? `url(${headerImageUrl})` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        {!(aquarium as any).latestPhotoUrl && (
-          <PoolIcon sx={{ fontSize: 100, color: 'grey.400' }} />
-        )}
+        {!headerImageUrl && <PoolIcon sx={{ fontSize: 100, color: 'grey.400' }} />}
+
         <IconButton
           onClick={handleBack}
           sx={{
@@ -159,29 +272,28 @@ export default function AquariumDetail() {
 
       <Grid container spacing={3}>
         {/* メイン情報 */}
-        <Grid size={{ xs: 12, md: 8}}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Paper sx={{ p: 3 }}>
             {/* タイトルとアクションボタン */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
               <Box>
                 <Typography variant="h4" component="h1" gutterBottom>
-                  {(aquarium as any).name}
+                  {aquariumName}
                 </Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Rating value={(aquarium as any).averageRating || 0} readOnly precision={0.5} />
-                    <Typography variant="body1">
-                      {((aquarium as any).averageRating || 0).toFixed(1)}
-                    </Typography>
+                    <Rating value={averageRating || 0} readOnly precision={0.5} />
+                    <Typography variant="body1">{Number(averageRating || 0).toFixed(1)}</Typography>
                   </Box>
+
                   <Typography variant="body2" color="text.secondary">
-                    訪問数: {(aquarium as any).visitCount || 0}件
+                    訪問数: {visitCount || 0}件
                   </Typography>
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  {(aquarium as any).visited && <Chip label="訪問済み" color="success" />}
+                  {visited && <Chip label="訪問済み" color="success" />}
                   {inWishlist && <Chip label="行きたいリスト登録済み" color="primary" />}
                 </Box>
               </Box>
@@ -191,7 +303,6 @@ export default function AquariumDetail() {
                   {inWishlist ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                 </IconButton>
 
-                {/* ★ 編集はadminだけ表示 */}
                 {isAdmin && (
                   <IconButton onClick={handleEdit}>
                     <EditIcon />
@@ -202,7 +313,7 @@ export default function AquariumDetail() {
 
             <Divider sx={{ my: 2 }} />
 
-            {/* ★写真セクション（部品） */}
+            {/* 写真セクション */}
             <AquariumPhotoSection
               aquariumId={(aquarium as any).id}
               aquarium={aquarium as any}
@@ -215,13 +326,13 @@ export default function AquariumDetail() {
             <Divider sx={{ my: 2 }} />
 
             {/* 説明 */}
-            {(aquarium as any).description && (
+            {description && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
                   概要
                 </Typography>
                 <Typography variant="body1" paragraph>
-                  {(aquarium as any).description}
+                  {description}
                 </Typography>
               </Box>
             )}
@@ -231,6 +342,7 @@ export default function AquariumDetail() {
               <Typography variant="h6" gutterBottom>
                 基本情報
               </Typography>
+
               <List>
                 <ListItem>
                   <ListItemAvatar>
@@ -238,21 +350,21 @@ export default function AquariumDetail() {
                       <LocationIcon />
                     </Avatar>
                   </ListItemAvatar>
-                  <ListItemText primary="住所" secondary={`${(aquarium as any).prefecture} ${(aquarium as any).address}`} />
+                  <ListItemText primary="住所" secondary={`${prefecture} ${address}`} />
                 </ListItem>
 
-                {(aquarium as any).phoneNumber && (
+                {phoneNumber && (
                   <ListItem>
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: 'primary.main' }}>
                         <PhoneIcon />
                       </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary="電話番号" secondary={(aquarium as any).phoneNumber} />
+                    <ListItemText primary="電話番号" secondary={phoneNumber} />
                   </ListItem>
                 )}
 
-                {(aquarium as any).website && (
+                {website && (
                   <ListItem>
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -262,8 +374,8 @@ export default function AquariumDetail() {
                     <ListItemText
                       primary="ウェブサイト"
                       secondary={
-                        <a href={(aquarium as any).website} target="_blank" rel="noopener noreferrer">
-                          {(aquarium as any).website}
+                        <a href={website} target="_blank" rel="noopener noreferrer">
+                          {website}
                         </a>
                       }
                     />
@@ -284,25 +396,34 @@ export default function AquariumDetail() {
         {/* サイド情報 */}
         <Grid size={{ xs: 12, md: 4 }}>
           {/* 営業時間 */}
-          {(aquarium as any).openingHours && Object.keys((aquarium as any).openingHours).length > 0 && (
+          {openingHours && Object.keys(openingHours).length > 0 && (
             <Card sx={{ mb: 2 }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <ClockIcon color="primary" />
                   <Typography variant="h6">営業時間</Typography>
                 </Box>
-                {Object.entries((aquarium as any).openingHours).map(([key, value]) => {
-                  if (key === 'recentVisits') return null;
+
+                {Object.entries(openingHours).map(([key, value]) => {
+                  if (key === 'recentVisits' || key === 'recent_visits') return null;
                   return (
                     <Box key={key} sx={{ mb: 1 }}>
                       <Typography variant="body2" color="text.secondary">
-                        {key === 'regular' ? '通常' :
-                         key === 'summer' ? '夏季' :
-                         key === 'goldenWeek' ? 'ゴールデンウィーク' :
-                         key === 'springCummer' ? '春夏' :
-                         key === 'autumnWinter' ? '秋冬' :
-                         key === 'weekday' ? '平日' :
-                         key === 'holiday' ? '休日' : key}
+                        {key === 'regular'
+                          ? '通常'
+                          : key === 'summer'
+                          ? '夏季'
+                          : key === 'goldenWeek'
+                          ? 'ゴールデンウィーク'
+                          : key === 'springCummer'
+                          ? '春夏'
+                          : key === 'autumnWinter'
+                          ? '秋冬'
+                          : key === 'weekday'
+                          ? '平日'
+                          : key === 'holiday'
+                          ? '休日'
+                          : key}
                       </Typography>
                       <Typography variant="body1">{String(value)}</Typography>
                     </Box>
@@ -313,21 +434,28 @@ export default function AquariumDetail() {
           )}
 
           {/* 入場料 */}
-          {(aquarium as any).admissionFee && Object.keys((aquarium as any).admissionFee).length > 0 && (
+          {admissionFee && Object.keys(admissionFee).length > 0 && (
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <MoneyIcon color="primary" />
                   <Typography variant="h6">入場料</Typography>
                 </Box>
-                {Object.entries((aquarium as any).admissionFee).map(([key, value]) => (
+
+                {Object.entries(admissionFee).map(([key, value]) => (
                   <Box key={key} sx={{ mb: 1 }}>
                     <Typography variant="body2" color="text.secondary">
-                      {key === 'adult' ? '大人' :
-                       key === 'highSchool' ? '高校生' :
-                       key === 'elementary' ? '小学生' :
-                       key === 'child' ? '子供' :
-                       key === 'infant' ? '幼児' : key}
+                      {key === 'adult'
+                        ? '大人'
+                        : key === 'highSchool'
+                        ? '高校生'
+                        : key === 'elementary'
+                        ? '小学生'
+                        : key === 'child'
+                        ? '子供'
+                        : key === 'infant'
+                        ? '幼児'
+                        : key}
                     </Typography>
                     <Typography variant="body1">¥{Number(value || 0).toLocaleString()}</Typography>
                   </Box>
@@ -344,16 +472,19 @@ export default function AquariumDetail() {
                   <StarIcon color="primary" />
                   <Typography variant="h6">最近の訪問</Typography>
                 </Box>
+
                 <List dense>
                   {recentVisits.map((visit: any) => (
                     <ListItem key={visit.id}>
                       <ListItemText
-                        primary={visit.userName}
+                        primary={visit.userName ?? visit.user_name ?? ''}
                         secondary={
                           <Box>
                             <Rating value={visit.rating || 0} size="small" readOnly />
                             <Typography variant="caption" display="block">
-                              {new Date(visit.visitedAt).toLocaleDateString('ja-JP')}
+                              {visit.visitedAt || visit.visited_at
+                                ? new Date(visit.visitedAt || visit.visited_at).toLocaleDateString('ja-JP')
+                                : ''}
                             </Typography>
                           </Box>
                         }

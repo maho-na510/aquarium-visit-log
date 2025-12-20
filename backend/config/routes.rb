@@ -3,7 +3,6 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
-      # 認証（WebはCookieセッションで）
       post   'login',  to: 'sessions#create'
       delete 'logout', to: 'sessions#destroy'
       get    'me',     to: 'sessions#me'
@@ -14,6 +13,7 @@ Rails.application.routes.draw do
           get :nearby
         end
         member do
+          get :og_image
           post :upload_photos
           delete "photos/:photo_id", to: "aquariums#destroy_photo"
         end

@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardMedia,
-  Grid,
   Typography,
   TextField,
   InputAdornment,
@@ -28,6 +27,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { aquariumService } from '../services/aquariumService';
 import { Aquarium } from '../types';
+import Grid from '@mui/material/Grid';
 
 // 都道府県リスト
 const PREFECTURES = [
@@ -49,11 +49,11 @@ export default function AquariumListPage() {
 
   // 水族館データを取得
   const { data, isLoading, error } = useQuery({
-    queryKey: ['aquariums', { 
-      q: searchQuery, 
-      prefecture: selectedPrefecture, 
-      sort: sortBy, 
-      page 
+    queryKey: ['aquariums', {
+      q: searchQuery,
+      prefecture: selectedPrefecture,
+      sort: sortBy,
+      page
     }],
     queryFn: () => aquariumService.getAquariums({
       q: searchQuery,
@@ -113,7 +113,7 @@ export default function AquariumListPage() {
       {/* 検索・フィルター */}
       <Box sx={{ mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextField
               fullWidth
               placeholder="水族館名で検索..."
@@ -128,7 +128,7 @@ export default function AquariumListPage() {
               }}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <FormControl fullWidth>
               <InputLabel>都道府県</InputLabel>
               <Select
@@ -145,7 +145,7 @@ export default function AquariumListPage() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <FormControl fullWidth>
               <InputLabel>並び替え</InputLabel>
               <Select
@@ -167,7 +167,7 @@ export default function AquariumListPage() {
         {isLoading ? (
           // スケルトンローディング
           Array.from({ length: 6 }).map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
               <Card>
                 <Skeleton variant="rectangular" height={200} />
                 <CardContent>
@@ -179,7 +179,7 @@ export default function AquariumListPage() {
           ))
         ) : (
           data?.aquariums.map((aquarium: Aquarium) => (
-            <Grid item xs={12} sm={6} md={4} key={aquarium.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={aquarium.id}>
               <Card 
                 sx={{ 
                   cursor: 'pointer',

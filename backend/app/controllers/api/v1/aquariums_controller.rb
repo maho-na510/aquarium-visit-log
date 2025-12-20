@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class Api::V1::AquariumsController < Api::V1::BaseController
-  skip_before_action :authenticate_user!, only: [:index, :show, :search, :nearby]
+  skip_before_action :authenticate_user!, only: [:index, :show, :search, :nearby, :og_image]
 
-  before_action :set_aquarium, only: [:show, :update, :destroy, :upload_photos, :destroy_photo]
+  before_action :set_aquarium, only: [:show, :update, :destroy, :upload_photos, :destroy_photo, :og_image]
   before_action :require_admin!, only: [:create, :update, :destroy, :upload_photos, :destroy_photo]
 
 
@@ -30,6 +30,17 @@ class Api::V1::AquariumsController < Api::V1::BaseController
   def show
     visited_ids, wishlist_ids = user_relation_ids
     render json: ::AquariumSerializer.new(@aquarium, current_user: current_user_or_nil, visited_ids: visited_ids, wishlist_ids: wishlist_ids).as_detail_json
+  end
+  # GET /api/v1/aquariums/:id/og_image
+  def og_image
+    url = @aquarium.website
+    return render json: { ogImageUrl: nil } if url.blank?
+
+    og = OgImageFetcher.call(url)
+    render json: { ogImageUrl: og }
+  rescue => e
+    Rails.logger.warn("[og_image] #{e.class}: #{e.message}")
+    render json: { ogImageUrl: nil }
   end
 
   # POST /api/v1/aquariums
@@ -153,7 +164,6 @@ class Api::V1::AquariumsController < Api::V1::BaseController
     user_signed_in? ? current_user : nil
   end
 
-  # visited / wishlist の N+1 を避ける
   def user_relation_ids
     return [nil, nil] unless user_signed_in?
 
