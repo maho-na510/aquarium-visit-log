@@ -11,6 +11,7 @@ import HomePage from './pages/HomePage';
 import MapPage from './pages/MapPage';
 import AquariumListPage from './pages/AquariumListPage';
 import AquariumDetailPage from './pages/AquariumDetailPage';
+import AquariumFormPage from './pages/AquariumFormPage';
 import VisitListPage from './pages/VisitListPage';
 import WishlistPage from './pages/WishlistPage';
 import RankingPage from './pages/RankingPage';
@@ -80,7 +81,9 @@ function App() {
               <Route index element={<HomePage />} />
               <Route path="map" element={<MapPage />} />
               <Route path="aquariums" element={<AquariumListPage />} />
+              <Route path="aquariums/new" element={<AquariumFormPage />} />
               <Route path="aquariums/:id" element={<AquariumDetailPage />} />
+              <Route path="aquariums/:id/edit" element={<AquariumFormPage />} />
               <Route path="visits" element={<VisitListPage />} />
               <Route path="wishlist" element={<WishlistPage />} />
               <Route path="rankings" element={<RankingPage />} />

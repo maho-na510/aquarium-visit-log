@@ -43,4 +43,7 @@ Rails.application.routes.draw do
   end
 
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # Catch React dev server websocket attempts (just return 404 silently)
+  get "/ws", to: proc { [404, {}, ['']] }
 end

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Box,
@@ -23,11 +23,54 @@ import {
   Search as SearchIcon,
   LocationOn as LocationIcon,
   Pool as PoolIcon,
+  Add as AddIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { aquariumService } from '../services/aquariumService';
 import { Aquarium } from '../types';
 import Grid from '@mui/material/Grid';
+import apiClient from '../services/api';
+import { useMe } from '../hooks/useMe';
+
+// Helper to convert relative URLs to absolute
+function getApiOrigin(): string {
+  const base = (apiClient.defaults.baseURL || '').trim();
+  if (!base) return window.location.origin;
+
+  try {
+    return new URL(base).origin;
+  } catch {
+    return window.location.origin;
+  }
+}
+
+function toAbsoluteUrl(maybeUrl: string | null | undefined): string | null {
+  if (!maybeUrl) return null;
+
+  // すでに絶対URLならそのまま
+  if (/^https?:\/\//i.test(maybeUrl)) return maybeUrl;
+
+  // "/rails/..." のような相対なら backend origin を付ける
+  if (maybeUrl.startsWith('/')) {
+    return `${getApiOrigin()}${maybeUrl}`;
+  }
+
+  return maybeUrl;
+}
+
+// Get the best available image for an aquarium
+function getAquariumImageUrl(aquarium: Aquarium): string | null {
+  const anyAquarium = aquarium as any;
+
+  // Priority: photos[0] > photoUrls[0] > photo_urls[0] > latestPhotoUrl
+  const imageUrl =
+    anyAquarium.photos?.[0]?.url ||
+    anyAquarium.photoUrls?.[0] ||
+    anyAquarium.photo_urls?.[0] ||
+    aquarium.latestPhotoUrl;
+
+  return toAbsoluteUrl(imageUrl);
+}
 
 // 都道府県リスト
 const PREFECTURES = [
@@ -46,6 +89,10 @@ export default function AquariumListPage() {
   const [selectedPrefecture, setSelectedPrefecture] = useState('');
   const [sortBy, setSortBy] = useState<'rating' | 'visits' | ''>('');
   const [page, setPage] = useState(1);
+
+  // ユーザー情報を取得
+  const { data: meData } = useMe();
+  const isAdmin = useMemo(() => meData?.user?.role === 'admin', [meData]);
 
   // 水族館データを取得
   const { data, isLoading, error } = useQuery({
@@ -97,17 +144,32 @@ export default function AquariumListPage() {
     );
   }
 
+  const handleAddAquarium = () => {
+    navigate('/aquariums/new');
+  };
+
   return (
     <Box>
       {/* ヘッダー */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <PoolIcon fontSize="large" />
-          水族館一覧
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          全国の水族館を探してみましょう
-        </Typography>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PoolIcon fontSize="large" />
+            水族館一覧
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            全国の水族館を探してみましょう
+          </Typography>
+        </Box>
+        {isAdmin && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAddAquarium}
+          >
+            水族館を追加
+          </Button>
+        )}
       </Box>
 
       {/* 検索・フィルター */}
@@ -178,39 +240,42 @@ export default function AquariumListPage() {
             </Grid>
           ))
         ) : (
-          data?.aquariums.map((aquarium: Aquarium) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={aquarium.id}>
-              <Card 
-                sx={{ 
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 3,
-                  },
-                }}
-                onClick={() => handleAquariumClick(aquarium.id)}
-              >
-                {aquarium.latestPhotoUrl ? (
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={aquarium.latestPhotoUrl}
-                    alt={aquarium.name}
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      height: 200,
-                      bgcolor: 'grey.200',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <PoolIcon sx={{ fontSize: 60, color: 'grey.400' }} />
-                  </Box>
-                )}
+          data?.aquariums.map((aquarium: Aquarium) => {
+            const imageUrl = getAquariumImageUrl(aquarium);
+
+            return (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={aquarium.id}>
+                <Card
+                  sx={{
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 3,
+                    },
+                  }}
+                  onClick={() => handleAquariumClick(aquarium.id)}
+                >
+                  {imageUrl ? (
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={imageUrl}
+                      alt={aquarium.name}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        height: 200,
+                        bgcolor: 'grey.200',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <PoolIcon sx={{ fontSize: 60, color: 'grey.400' }} />
+                    </Box>
+                  )}
                 <CardContent>
                   <Typography variant="h6" component="h2" gutterBottom>
                     {aquarium.name}
@@ -243,7 +308,8 @@ export default function AquariumListPage() {
                 </CardContent>
               </Card>
             </Grid>
-          ))
+            );
+          })
         )}
       </Grid>
 
