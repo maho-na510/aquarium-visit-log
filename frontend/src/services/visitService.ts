@@ -49,32 +49,32 @@ export const visitService = {
   // 訪問記録を作成
   async createVisit(data: VisitForm): Promise<Visit> {
     const formData = new FormData();
-    
+
     // 基本情報
     formData.append('visit[aquarium_id]', data.aquariumId.toString());
     formData.append('visit[visited_at]', data.visitedAt);
     if (data.weather) formData.append('visit[weather]', data.weather);
     if (data.rating) formData.append('visit[rating]', data.rating.toString());
     if (data.memo) formData.append('visit[memo]', data.memo);
-    
+
     // 良かった展示
     if (data.goodExhibitsList) {
       data.goodExhibitsList.forEach((exhibit, index) => {
         formData.append(`visit[good_exhibits_list][${index}]`, exhibit);
       });
     }
-    
-    // 写真アップロード
+
+    // 写真アップロード - params[:photos] として送る
     if (data.photos) {
-      data.photos.forEach((photo, index) => {
-        formData.append(`visit[photos][${index}]`, photo);
+      data.photos.forEach((photo) => {
+        formData.append('photos[]', photo);
       });
     }
-    
-    // 動画アップロード
+
+    // 動画アップロード - params[:videos] として送る
     if (data.videos) {
-      data.videos.forEach((video, index) => {
-        formData.append(`visit[videos][${index}]`, video);
+      data.videos.forEach((video) => {
+        formData.append('videos[]', video);
       });
     }
 
@@ -83,7 +83,7 @@ export const visitService = {
         'Content-Type': 'multipart/form-data',
       },
     });
-    
+
     return response.data;
   },
 

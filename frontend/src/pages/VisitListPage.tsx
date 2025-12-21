@@ -241,7 +241,9 @@ export default function VisitListPage() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                     <CalendarIcon fontSize="small" />
                     <Typography variant="body2">
-                      {format(new Date(visit.visitedAt), 'yyyy年M月d日', { locale: ja })}
+                      {visit.visitedAt
+                        ? format(new Date(visit.visitedAt), 'yyyy年M月d日', { locale: ja })
+                        : '日付不明'}
                     </Typography>
                     {visit.weather && <Typography variant="body2">{getWeatherIcon(visit.weather)}</Typography>}
                   </Box>
@@ -312,7 +314,9 @@ export default function VisitListPage() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h6">{selectedVisit.aquarium.name}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {format(new Date(selectedVisit.visitedAt), 'yyyy年M月d日', { locale: ja })}
+                  {selectedVisit.visitedAt
+                    ? format(new Date(selectedVisit.visitedAt), 'yyyy年M月d日', { locale: ja })
+                    : '日付不明'}
                 </Typography>
               </Box>
             </DialogTitle>

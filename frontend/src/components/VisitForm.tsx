@@ -28,10 +28,10 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { visitService } from '../services/visitService';
 import { aquariumService } from '../services/aquariumService';
-import { VisitForm as VisitFormType } from '../types';
+import { VisitForm as VisitFormType, Aquarium } from '../types';
 
 interface VisitFormProps {
   open: boolean;
@@ -55,6 +55,15 @@ export default function VisitForm({ open, onClose, aquariumId }: VisitFormProps)
   const [exhibitInput, setExhibitInput] = useState('');
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // 水族館リストを取得
+  const { data: aquariumsData } = useQuery({
+    queryKey: ['aquariums'],
+    queryFn: () => aquariumService.getAquariums({ per: 1000 }), // 全件取得
+    enabled: !aquariumId, // aquariumIdが指定されていない場合のみ取得
+  });
+
+  const aquariums: Aquarium[] = aquariumsData?.aquariums || [];
 
   const createMutation = useMutation({
     mutationFn: (data: VisitFormType) => visitService.createVisit(data),
@@ -151,12 +160,11 @@ export default function VisitForm({ open, onClose, aquariumId }: VisitFormProps)
                     }
                     label="水族館"
                   >
-                    {/* TODO: 水族館リストを動的に取得 */}
-                    <MenuItem value={1}>すみだ水族館</MenuItem>
-                    <MenuItem value={2}>サンシャイン水族館</MenuItem>
-                    <MenuItem value={3}>名古屋港水族館</MenuItem>
-                    <MenuItem value={4}>海遊館</MenuItem>
-                    <MenuItem value={5}>沖縄美ら海水族館</MenuItem>
+                    {aquariums.map((aquarium) => (
+                      <MenuItem key={aquarium.id} value={aquarium.id}>
+                        {aquarium.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>

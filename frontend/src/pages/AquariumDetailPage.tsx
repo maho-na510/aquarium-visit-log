@@ -14,10 +14,6 @@ import {
   Card,
   CardContent,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   List,
   ListItem,
   ListItemText,
@@ -44,6 +40,7 @@ import { aquariumService } from '../services/aquariumService';
 import AquariumPhotoSection from '../components/aquarium/AquariumPhotoSection';
 import { useMe } from '../hooks/useMe';
 import apiClient from '../services/api';
+import VisitForm from '../components/VisitForm';
 
 type OgImageResponse = {
   og_image_url?: string | null;
@@ -498,16 +495,12 @@ export default function AquariumDetailPage() {
         </Grid>
       </Grid>
 
-      {/* 訪問記録追加ダイアログ（仮） */}
-      <Dialog open={openVisitDialog} onClose={() => setOpenVisitDialog(false)}>
-        <DialogTitle>訪問記録を追加</DialogTitle>
-        <DialogContent>
-          <Typography>訪問記録機能は現在開発中です。</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenVisitDialog(false)}>閉じる</Button>
-        </DialogActions>
-      </Dialog>
+      {/* 訪問記録追加フォーム */}
+      <VisitForm
+        open={openVisitDialog}
+        onClose={() => setOpenVisitDialog(false)}
+        aquariumId={aquariumId}
+      />
     </Box>
   );
 }

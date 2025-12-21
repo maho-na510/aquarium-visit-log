@@ -139,13 +139,15 @@ class Api::V1::VisitsController < Api::V1::BaseController
           name: visit.aquarium.name,
           address: visit.aquarium.address
         },
-        visited_at: visit.visited_at,
+        visitedAt: visit.visited_at,
         weather: visit.weather,
         rating: visit.rating,
         memo: visit.memo&.truncate(100),
-        photo_urls: visit.photos.limit(3).map { |p| url_for(p) },
-        photo_count: visit.photos.count,
-        video_count: visit.videos.count
+        photoUrls: visit.photos.limit(3).map { |p| url_for(p) },
+        photoCount: visit.photos.count,
+        videoCount: visit.videos.count,
+        createdAt: visit.created_at,
+        updatedAt: visit.updated_at
       }
     end
   end
@@ -164,17 +166,17 @@ class Api::V1::VisitsController < Api::V1::BaseController
         id: visit.user.id,
         name: visit.user.name,
         username: visit.user.username,
-        avatar_url: visit.user.avatar.attached? ? url_for(visit.user.avatar) : nil
+        avatarUrl: visit.user.avatar.attached? ? url_for(visit.user.avatar) : nil
       },
-      visited_at: visit.visited_at,
+      visitedAt: visit.visited_at,
       weather: visit.weather,
       rating: visit.rating,
       memo: visit.memo,
-      good_exhibits: visit.good_exhibits_list,
-      photo_urls: visit.photos.map { |p| url_for(p) },
-      video_urls: visit.videos.map { |v| url_for(v) },
-      created_at: visit.created_at,
-      updated_at: visit.updated_at
+      goodExhibits: visit.good_exhibits_list,
+      photoUrls: visit.photos.map { |p| url_for(p) },
+      videoUrls: visit.videos.map { |v| url_for(v) },
+      createdAt: visit.created_at,
+      updatedAt: visit.updated_at
     }
   end
 end
