@@ -81,6 +81,15 @@ export const aquariumService = {
     return response.data;
   },
 
+  // ヘッダー写真を設定
+  async setHeaderPhoto(aquariumId: number, photoId: number): Promise<Aquarium> {
+    const response = await apiClient.put(
+      `/aquariums/${aquariumId}/set_header_photo`,
+      { photo_id: photoId }
+    );
+    return response.data;
+  },
+
   // =====================
   // 検索・地図
   // =====================

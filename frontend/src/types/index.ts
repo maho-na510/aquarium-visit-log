@@ -45,11 +45,30 @@ export interface Aquarium {
   inWishlist: boolean;
   createdBy?: number;
   latestPhotoUrl?: string;
+  headerPhotoUrl?: string;
+  headerPhotoId?: number;
   photos?: AquariumPhoto[];
+  visitPhotos?: VisitPhoto[];
+  allPhotos?: AllPhoto[];
 }
 export interface AquariumPhoto {
   id: number;
   url: string;
+  source?: string;
+}
+export interface VisitPhoto {
+  id: number;
+  url: string;
+  source: string;
+  visitId: number;
+  visitedAt: string;
+}
+export interface AllPhoto {
+  id: number;
+  url: string;
+  source: 'aquarium' | 'visit';
+  visitId?: number;
+  visitedAt?: string;
 }
 
 export interface AquariumSummary {

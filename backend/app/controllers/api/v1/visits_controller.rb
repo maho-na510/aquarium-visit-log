@@ -24,7 +24,7 @@ class Api::V1::VisitsController < Api::V1::BaseController
       end
     end
 
-    # 検索（q）: memo や good_exhibits_list を軽く対象に（必要なら調整してOK）
+    # 検索（q）: memo や good_exhibits_list 
     if params[:q].present?
       q = params[:q].to_s.strip
       if q.present?
@@ -102,8 +102,6 @@ class Api::V1::VisitsController < Api::V1::BaseController
   end
 
   def visit_params
-    # フロントが { aquariumId, visitedAt, ... } みたいに送るなら変換が必要。
-    # いまの想定は Rails 側は { visit: { ... } } で来る形。
     params.require(:visit).permit(
       :aquarium_id,
       :visited_at,
@@ -143,7 +141,9 @@ class Api::V1::VisitsController < Api::V1::BaseController
         weather: visit.weather,
         rating: visit.rating,
         memo: visit.memo&.truncate(100),
-        photoUrls: visit.photos.limit(3).map { |p| url_for(p) },
+        photoUrls: visit.photos.limit(3).map { |p|
+          rails_blob_url(p, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http')
+        },
         photoCount: visit.photos.count,
         videoCount: visit.videos.count,
         createdAt: visit.created_at,
@@ -166,17 +166,21 @@ class Api::V1::VisitsController < Api::V1::BaseController
         id: visit.user.id,
         name: visit.user.name,
         username: visit.user.username,
-        avatarUrl: visit.user.avatar.attached? ? url_for(visit.user.avatar) : nil
+        avatarUrl: visit.user.avatar.attached? ? rails_blob_url(visit.user.avatar, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http') : nil
       },
       visitedAt: visit.visited_at,
       weather: visit.weather,
       rating: visit.rating,
       memo: visit.memo,
       goodExhibits: visit.good_exhibits_list,
-      photoUrls: visit.photos.map { |p| url_for(p) },
-      videoUrls: visit.videos.map { |v| url_for(v) },
+      photoUrls: visit.photos.map { |p| rails_blob_url(p, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http') },
+      videoUrls: visit.videos.map { |v| rails_blob_url(v, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http') },
       createdAt: visit.created_at,
       updatedAt: visit.updated_at
     }
+  end
+
+  def default_url_options
+    Rails.application.routes.default_url_options
   end
 end

@@ -90,16 +90,29 @@ export const visitService = {
   // 訪問記録を更新
   async updateVisit(id: number, data: Partial<VisitForm>): Promise<Visit> {
     const formData = new FormData();
-    
+
     // 更新可能なフィールドのみ送信
-    if (data.visitedAt) formData.append('visit[visited_at]', data.visitedAt);
-    if (data.weather !== undefined) formData.append('visit[weather]', data.weather);
+    if (data.aquariumId !== undefined) formData.append('visit[aquarium_id]', data.aquariumId.toString());
+    if (data.visitedAt !== undefined) formData.append('visit[visited_at]', data.visitedAt);
+    if (data.weather !== undefined) formData.append('visit[weather]', data.weather || '');
     if (data.rating !== undefined) formData.append('visit[rating]', data.rating.toString());
-    if (data.memo !== undefined) formData.append('visit[memo]', data.memo);
-    
-    if (data.goodExhibitsList) {
-      data.goodExhibitsList.forEach((exhibit, index) => {
-        formData.append(`visit[good_exhibits_list][${index}]`, exhibit);
+    if (data.memo !== undefined) formData.append('visit[memo]', data.memo || '');
+
+    if (data.goodExhibitsList !== undefined) {
+      if (data.goodExhibitsList.length === 0) {
+        // 空配列を送信する場合
+        formData.append('visit[good_exhibits_list][]', '');
+      } else {
+        data.goodExhibitsList.forEach((exhibit, index) => {
+          formData.append(`visit[good_exhibits_list][${index}]`, exhibit);
+        });
+      }
+    }
+
+    // 写真アップロード（新しい写真がある場合）
+    if (data.photos && data.photos.length > 0) {
+      data.photos.forEach((photo) => {
+        formData.append('photos[]', photo);
       });
     }
 
@@ -108,7 +121,7 @@ export const visitService = {
         'Content-Type': 'multipart/form-data',
       },
     });
-    
+
     return response.data;
   },
 

@@ -38,6 +38,7 @@ import {
 
 import { aquariumService } from '../services/aquariumService';
 import AquariumPhotoSection from '../components/aquarium/AquariumPhotoSection';
+import AquariumAllPhotosSection from '../components/aquarium/AquariumAllPhotosSection';
 import { useMe } from '../hooks/useMe';
 import apiClient from '../services/api';
 import VisitForm from '../components/VisitForm';
@@ -321,6 +322,17 @@ export default function AquariumDetailPage() {
             />
 
             <Divider sx={{ my: 2 }} />
+
+            {/* すべての写真セクション (水族館 + 訪問記録) */}
+            {aquarium.allPhotos && aquarium.allPhotos.length > 0 && (
+              <>
+                <AquariumAllPhotosSection
+                  aquarium={aquarium as any}
+                  isAdmin={isAdmin}
+                />
+                <Divider sx={{ my: 2 }} />
+              </>
+            )}
 
             {/* 説明 */}
             {description && (

@@ -13,6 +13,7 @@ import AquariumListPage from './pages/AquariumListPage';
 import AquariumDetailPage from './pages/AquariumDetailPage';
 import AquariumFormPage from './pages/AquariumFormPage';
 import VisitListPage from './pages/VisitListPage';
+import VisitEditPage from './pages/VisitEditPage';
 import WishlistPage from './pages/WishlistPage';
 import RankingPage from './pages/RankingPage';
 import ProfilePage from './pages/ProfilePage';
@@ -85,6 +86,7 @@ function App() {
               <Route path="aquariums/:id" element={<AquariumDetailPage />} />
               <Route path="aquariums/:id/edit" element={<AquariumFormPage />} />
               <Route path="visits" element={<VisitListPage />} />
+              <Route path="visits/:id/edit" element={<VisitEditPage />} />
               <Route path="wishlist" element={<WishlistPage />} />
               <Route path="rankings" element={<RankingPage />} />
               <Route path="profile" element={<ProfilePage />} />

@@ -140,6 +140,7 @@ GEM
     faker (3.5.2)
       i18n (>= 1.8.11, < 2)
     ffi (1.17.2-aarch64-linux-gnu)
+    ffi (1.17.2-arm64-darwin)
     geocoder (1.8.5)
       base64 (>= 0.1.0)
       csv (>= 3.0.0)
@@ -199,6 +200,8 @@ GEM
       net-protocol
     nio4r (2.7.4)
     nokogiri (1.18.8-aarch64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.18.8-arm64-darwin)
       racc (~> 1.4)
     orm_adapter (0.5.0)
     pp (0.6.2)
@@ -302,6 +305,7 @@ GEM
 
 PLATFORMS
   aarch64-linux
+  arm64-darwin-24
 
 DEPENDENCIES
   active_model_serializers
@@ -326,7 +330,7 @@ DEPENDENCIES
   tzinfo-data
 
 RUBY VERSION
-   ruby 3.2.2p53
+   ruby 3.2.4p170
 
 BUNDLED WITH
    2.4.10

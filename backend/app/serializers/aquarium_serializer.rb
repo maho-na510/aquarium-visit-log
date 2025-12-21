@@ -24,7 +24,9 @@ def as_index_json
     in_wishlist: in_wishlist?,
     photo_urls: photo_urls.take(3),
     photos: photos_json(limit: 3),
-    latest_photo_url: latest_photo_url
+    latest_photo_url: latest_photo_url,
+    header_photo_url: header_photo_url,
+    visit_photos: visit_photos_json(limit: 5)
   }
 end
 
@@ -48,6 +50,9 @@ def as_detail_json
     created_by: @aquarium.user_id,
     photo_urls: photo_urls,
     photos: photos_json,
+    header_photo_url: header_photo_url,
+    header_photo_id: @aquarium.header_photo_id,
+    all_photos: all_photos_json,
     recent_visits: recent_visits_json
   }
 end
@@ -108,5 +113,54 @@ end
     @aquarium.visits.recent.limit(5).map do |v|
       VisitSerializer.new(v).as_summary_json
     end
+  end
+
+  def header_photo_url
+    header = @aquarium.header_photo
+    return nil unless header
+
+    rails_blob_url(header, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http')
+  rescue StandardError
+    nil
+  end
+
+  def visit_photos_json(limit: nil)
+    visits = @aquarium.visits.joins(:photos_attachments).includes(photos_attachments: :blob).order(visited_at: :desc).distinct
+    visits = visits.limit(limit) if limit
+
+    visits.flat_map do |visit|
+      visit.photos.attachments.map do |attachment|
+        {
+          id: attachment.id,
+          url: rails_blob_url(attachment, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http'),
+          source: 'visit',
+          visit_id: visit.id,
+          visited_at: visit.visited_at
+        }
+      end
+    end
+  end
+
+  def all_photos_json
+    # 水族館の写真
+    aquarium_photos = photos_json.map { |p| p.merge(source: 'aquarium') }
+
+    # 訪問記録の写真
+    visit_photos = @aquarium.visits.joins(:photos_attachments)
+                                   .includes(photos_attachments: :blob)
+                                   .order(visited_at: :desc)
+                                   .flat_map do |visit|
+      visit.photos.attachments.map do |attachment|
+        {
+          id: attachment.id,
+          url: rails_blob_url(attachment, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http'),
+          source: 'visit',
+          visit_id: visit.id,
+          visited_at: visit.visited_at
+        }
+      end
+    end
+
+    aquarium_photos + visit_photos
   end
 end

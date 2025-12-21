@@ -143,6 +143,36 @@ class Api::V1::AquariumsController < Api::V1::BaseController
     ).as_detail_json
   end
 
+  # PUT /api/v1/aquariums/:id/set_header_photo
+  def set_header_photo
+    photo_id = params[:photo_id]
+
+    return render json: { error: "photo_id が必要です" }, status: :bad_request if photo_id.blank?
+
+    # 写真が水族館またはその訪問記録に属しているか確認
+    attachment = @aquarium.photos.attachments.find_by(id: photo_id)
+
+    unless attachment
+      # 訪問記録の写真からも探す
+      visit_attachment = ActiveStorage::Attachment.joins("INNER JOIN visits ON active_storage_attachments.record_id = visits.id")
+                                                   .where(active_storage_attachments: { id: photo_id, name: 'photos' })
+                                                   .where(visits: { aquarium_id: @aquarium.id })
+                                                   .first
+
+      return render json: { error: "指定された写真が見つかりません" }, status: :not_found unless visit_attachment
+    end
+
+    @aquarium.update(header_photo_id: photo_id)
+
+    visited_ids, wishlist_ids = user_relation_ids
+    render json: ::AquariumSerializer.new(
+      @aquarium,
+      current_user: current_user_or_nil,
+      visited_ids: visited_ids,
+      wishlist_ids: wishlist_ids
+    ).as_detail_json
+  end
+
 
   private
 

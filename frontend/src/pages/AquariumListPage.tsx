@@ -62,8 +62,10 @@ function toAbsoluteUrl(maybeUrl: string | null | undefined): string | null {
 function getAquariumImageUrl(aquarium: Aquarium): string | null {
   const anyAquarium = aquarium as any;
 
-  // Priority: photos[0] > photoUrls[0] > photo_urls[0] > latestPhotoUrl
+  // Priority: headerPhotoUrl > visitPhotos[0] > photos[0] > photoUrls[0] > photo_urls[0] > latestPhotoUrl
   const imageUrl =
+    aquarium.headerPhotoUrl ||
+    anyAquarium.visitPhotos?.[0]?.url ||
     anyAquarium.photos?.[0]?.url ||
     anyAquarium.photoUrls?.[0] ||
     anyAquarium.photo_urls?.[0] ||

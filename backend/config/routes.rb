@@ -16,6 +16,7 @@ Rails.application.routes.draw do
           get :og_image
           post :upload_photos
           delete "photos/:photo_id", to: "aquariums#destroy_photo"
+          put :set_header_photo
         end
       end
 
