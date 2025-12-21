@@ -290,13 +290,13 @@ export default function AquariumListPage() {
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Rating value={aquarium.averageRating || 0} readOnly size="small" precision={0.5} />
+                      <Rating value={Number((aquarium as any).averageRating || (aquarium as any).average_rating || 0)} readOnly size="small" precision={0.5} />
                       <Typography variant="body2" color="text.secondary">
-                        ({(aquarium.averageRating || 0).toFixed(1)})
+                        ({Number((aquarium as any).averageRating || (aquarium as any).average_rating || 0).toFixed(1)})
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
-                      訪問数: {aquarium.visitCount || 0}
+                      訪問数: {(aquarium as any).visitCount || (aquarium as any).visit_count || 0}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', gap: 1 }}>

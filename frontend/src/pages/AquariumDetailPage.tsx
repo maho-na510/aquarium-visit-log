@@ -324,10 +324,15 @@ export default function AquariumDetailPage() {
             <Divider sx={{ my: 2 }} />
 
             {/* すべての写真セクション (水族館 + 訪問記録) */}
-            {aquarium.allPhotos && aquarium.allPhotos.length > 0 && (
+            {((aquarium as any).allPhotos || (aquarium as any).all_photos) &&
+             ((aquarium as any).allPhotos?.length > 0 || (aquarium as any).all_photos?.length > 0) && (
               <>
                 <AquariumAllPhotosSection
-                  aquarium={aquarium as any}
+                  aquarium={{
+                    ...(aquarium as any),
+                    allPhotos: (aquarium as any).allPhotos || (aquarium as any).all_photos,
+                    headerPhotoId: (aquarium as any).headerPhotoId || (aquarium as any).header_photo_id,
+                  }}
                   isAdmin={isAdmin}
                 />
                 <Divider sx={{ my: 2 }} />
