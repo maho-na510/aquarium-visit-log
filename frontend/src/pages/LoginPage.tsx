@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Container, Alert } from '@mui/material';
+import { Box, Button, TextField, Typography, Container, Alert, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import apiClient from '../services/api';
 
 export default function LoginPage() {
@@ -22,6 +23,16 @@ export default function LoginPage() {
   return (
     <Container maxWidth="sm">
       <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', mb: 2 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/')}
+            sx={{ textTransform: 'none' }}
+          >
+            ホームに戻る
+          </Button>
+        </Box>
+
         <Typography component="h1" variant="h5">
           ログイン
         </Typography>
@@ -46,6 +57,7 @@ export default function LoginPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
           />
 
           <Button
@@ -56,6 +68,20 @@ export default function LoginPage() {
           >
             ログイン
           </Button>
+
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              アカウントをお持ちでない方は{' '}
+              <Link
+                component="button"
+                variant="body2"
+                onClick={() => navigate('/register')}
+                sx={{ cursor: 'pointer' }}
+              >
+                新規登録
+              </Link>
+            </Typography>
+          </Box>
         </Box>
       </Box>
     </Container>

@@ -19,6 +19,8 @@ import RankingPage from './pages/RankingPage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AquariumVisitsPage from './pages/AquariumVisitsPage';
+import VisitDetailPage from './pages/VisitDetailPage';
 
 // MUIテーマの設定
 const theme = createTheme({
@@ -84,8 +86,10 @@ function App() {
               <Route path="aquariums" element={<AquariumListPage />} />
               <Route path="aquariums/new" element={<AquariumFormPage />} />
               <Route path="aquariums/:id" element={<AquariumDetailPage />} />
+              <Route path="aquariums/:id/visits" element={<AquariumVisitsPage />} />
               <Route path="aquariums/:id/edit" element={<AquariumFormPage />} />
               <Route path="visits" element={<VisitListPage />} />
+              <Route path="visits/:id" element={<VisitDetailPage />} />
               <Route path="visits/:id/edit" element={<VisitEditPage />} />
               <Route path="wishlist" element={<WishlistPage />} />
               <Route path="rankings" element={<RankingPage />} />

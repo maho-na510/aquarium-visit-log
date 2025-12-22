@@ -34,9 +34,13 @@ import {
   AddPhotoAlternate as AddPhotoIcon,
   Pool as PoolIcon,
   Star as StarIcon,
+  CalendarToday as CalendarIcon,
+  PhotoCamera as PhotoIcon,
+  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 
 import { aquariumService } from '../services/aquariumService';
+import { visitService } from '../services/visitService';
 import AquariumPhotoSection from '../components/aquarium/AquariumPhotoSection';
 import AquariumAllPhotosSection from '../components/aquarium/AquariumAllPhotosSection';
 import { useMe } from '../hooks/useMe';
@@ -87,6 +91,7 @@ export default function AquariumDetailPage() {
 
   const { data: meData } = useMe();
   const isAdmin = useMemo(() => meData?.user?.role === 'admin', [meData]);
+  const isLoggedIn = !!meData?.user;
 
   // 水族館詳細データを取得
   const {
@@ -97,6 +102,18 @@ export default function AquariumDetailPage() {
     queryKey: ['aquarium', aquariumId],
     queryFn: () => aquariumService.getAquarium(aquariumId),
     enabled: Number.isFinite(aquariumId),
+  });
+
+  // この水族館の訪問記録を取得
+  const { data: allVisits } = useQuery({
+    queryKey: ['aquarium-visits', aquariumId],
+    queryFn: async () => {
+      const visits = await visitService.getVisits({ aquariumId });
+      console.log('Fetched visits for aquarium', aquariumId, ':', visits);
+      return visits;
+    },
+    enabled: Number.isFinite(aquariumId),
+    refetchOnMount: 'always',
   });
 
   // 公式サイトOGP画像（ヘッダー用フォールバック）
@@ -399,11 +416,25 @@ export default function AquariumDetailPage() {
             </Box>
 
             {/* アクションボタン */}
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button variant="contained" startIcon={<AddPhotoIcon />} onClick={handleAddVisit} fullWidth>
-                訪問記録を追加
-              </Button>
-            </Box>
+            {isLoggedIn ? (
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button variant="contained" startIcon={<AddPhotoIcon />} onClick={handleAddVisit} fullWidth>
+                  訪問記録を追加
+                </Button>
+              </Box>
+            ) : (
+              <Alert severity="info">
+                訪問記録を追加するには
+                <Button onClick={() => navigate('/login')} sx={{ ml: 1 }}>
+                  ログイン
+                </Button>
+                または
+                <Button onClick={() => navigate('/register')} sx={{ ml: 1 }}>
+                  新規登録
+                </Button>
+                してください
+              </Alert>
+            )}
           </Paper>
         </Grid>
 
@@ -493,14 +524,14 @@ export default function AquariumDetailPage() {
                       <ListItemText
                         primary={visit.userName ?? visit.user_name ?? ''}
                         secondary={
-                          <Box>
+                          <>
                             <Rating value={visit.rating || 0} size="small" readOnly />
                             <Typography variant="caption" display="block">
                               {visit.visitedAt || visit.visited_at
                                 ? new Date(visit.visitedAt || visit.visited_at).toLocaleDateString('ja-JP')
                                 : ''}
                             </Typography>
-                          </Box>
+                          </>
                         }
                       />
                     </ListItem>
@@ -511,6 +542,135 @@ export default function AquariumDetailPage() {
           )}
         </Grid>
       </Grid>
+
+      {/* みんなの訪問記録セクション */}
+      {allVisits && allVisits.length > 0 && (
+        <Box sx={{ mt: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" component="h2">
+              みんなの訪問記録
+            </Typography>
+            {allVisits.length > 3 && (
+              <Button
+                size="small"
+                endIcon={<ArrowForwardIcon />}
+                onClick={() => navigate(`/aquariums/${aquariumId}/visits`)}
+              >
+                すべての投稿を見る ({allVisits.length}件)
+              </Button>
+            )}
+          </Box>
+
+          <Grid container spacing={3}>
+            {allVisits.slice(0, 3).map((visit) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={visit.id}>
+                <Card
+                  sx={{ cursor: 'pointer', height: '100%' }}
+                  onClick={() => navigate(`/visits/${visit.id}`)}
+                >
+                  {visit.photoUrls && visit.photoUrls.length > 0 ? (
+                    <Box
+                      component="img"
+                      sx={{
+                        height: 200,
+                        width: '100%',
+                        objectFit: 'cover',
+                      }}
+                      src={visit.photoUrls[0]}
+                      alt={aquariumName}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        height: 200,
+                        bgcolor: 'grey.200',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <PhotoIcon sx={{ fontSize: 60, color: 'grey.400' }} />
+                    </Box>
+                  )}
+
+                  <CardContent>
+                    {/* ユーザー情報 */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                      <Avatar
+                        src={visit.user?.avatarUrl}
+                        sx={{ width: 32, height: 32 }}
+                      >
+                        {visit.user?.name?.[0]?.toUpperCase()}
+                      </Avatar>
+                      <Typography variant="body2" fontWeight="bold">
+                        {visit.user?.name || 'ユーザー'}
+                      </Typography>
+                    </Box>
+
+                    {/* 訪問日 */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <CalendarIcon fontSize="small" />
+                      <Typography variant="body2">
+                        {visit.visitedAt
+                          ? new Date(visit.visitedAt).toLocaleDateString('ja-JP', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })
+                          : '日付不明'}
+                      </Typography>
+                    </Box>
+
+                    {/* 評価 */}
+                    {visit.rating && (
+                      <Box sx={{ mb: 1 }}>
+                        <Rating value={visit.rating} readOnly size="small" />
+                      </Box>
+                    )}
+
+                    {/* 良かった展示 */}
+                    {visit.goodExhibits && visit.goodExhibits.filter((e: string) => e.trim()).length > 0 && (
+                      <Box sx={{ mb: 1 }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {visit.goodExhibits
+                            .filter((e: string) => e.trim())
+                            .slice(0, 3)
+                            .map((exhibit: string, index: number) => (
+                              <Chip
+                                key={index}
+                                label={exhibit}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                              />
+                            ))}
+                        </Box>
+                      </Box>
+                    )}
+
+                    {/* メモ */}
+                    {visit.memo && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                        }}
+                      >
+                        {visit.memo}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )}
 
       {/* 訪問記録追加フォーム */}
       <VisitForm

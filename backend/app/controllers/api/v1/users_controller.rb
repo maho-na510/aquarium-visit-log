@@ -1,6 +1,7 @@
 class Api::V1::UsersController < Api::V1::BaseController
+  skip_before_action :authenticate_user!, only: [:show, :visits, :wishlist]
   before_action :set_user, only: [:show, :visits, :wishlist]
-  
+
   # GET /api/v1/users/:id
   def show
     render json: serialize_user(@user)

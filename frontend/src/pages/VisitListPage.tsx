@@ -41,9 +41,14 @@ import { visitService } from '../services/visitService';
 import { Visit } from '../types';
 import VisitForm from '../components/VisitForm';
 import Grid from '@mui/material/Grid';
+import { useMe } from '../hooks/useMe';
 
 export default function VisitListPage() {
   const navigate = useNavigate();
+  const { data: meData } = useMe();
+  const isLoggedIn = !!meData?.user;
+  const currentUserId = meData?.user?.id;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAquarium, setSelectedAquarium] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'rating'>('date');
@@ -139,11 +144,27 @@ export default function VisitListPage() {
       </Box>
 
       {/* 追加ボタン */}
-      <Box sx={{ mb: 3 }}>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>
-          訪問記録を追加
-        </Button>
-      </Box>
+      {isLoggedIn && (
+        <Box sx={{ mb: 3 }}>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>
+            訪問記録を追加
+          </Button>
+        </Box>
+      )}
+
+      {!isLoggedIn && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          訪問記録を追加するには
+          <Button onClick={() => navigate('/login')} sx={{ ml: 1 }}>
+            ログイン
+          </Button>
+          または
+          <Button onClick={() => navigate('/register')} sx={{ ml: 1 }}>
+            新規登録
+          </Button>
+          してください
+        </Alert>
+      )}
 
       {/* 検索・フィルター */}
       <Box sx={{ mb: 4 }}>
@@ -277,14 +298,16 @@ export default function VisitListPage() {
                   </Box>
                 </CardContent>
 
-                <CardActions>
-                  <IconButton size="small" onClick={() => handleEdit(visit.id)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteClick(visit.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </CardActions>
+                {isLoggedIn && visit.user && currentUserId === visit.user.id && (
+                  <CardActions>
+                    <IconButton size="small" onClick={() => handleEdit(visit.id)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleDeleteClick(visit.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </CardActions>
+                )}
               </Card>
             </Grid>
           ))
@@ -371,9 +394,11 @@ export default function VisitListPage() {
 
             <DialogActions>
               <Button onClick={() => setSelectedVisit(null)}>閉じる</Button>
-              <Button onClick={() => handleEdit(selectedVisit.id)} variant="contained">
-                編集
-              </Button>
+              {isLoggedIn && selectedVisit.user && currentUserId === selectedVisit.user.id && (
+                <Button onClick={() => handleEdit(selectedVisit.id)} variant="contained">
+                  編集
+                </Button>
+              )}
             </DialogActions>
           </>
         )}

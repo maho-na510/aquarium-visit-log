@@ -22,7 +22,10 @@ class Api::V1::SessionsController < ApplicationController
   end
 
   def destroy
-    sign_out(current_user) if user_signed_in?
+    if user_signed_in?
+      sign_out(current_user)
+      reset_session
+    end
     head :no_content
   end
 

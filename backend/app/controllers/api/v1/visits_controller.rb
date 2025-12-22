@@ -4,11 +4,22 @@ class Api::V1::VisitsController < Api::V1::BaseController
   include Rails.application.routes.url_helpers
 
   before_action :set_visit, only: %i[show update destroy upload_photos]
-  before_action :authorize_visit!, only: %i[show update destroy upload_photos]
+  before_action :authorize_visit!, only: %i[update destroy upload_photos]
+  skip_before_action :authenticate_user!, only: [:index, :show]
 
   # GET /api/v1/visits
   def index
-    visits = current_user.visits.includes(:aquarium, photos_attachments: :blob, videos_attachments: :blob)
+    # If user is logged in and no aquarium_id filter, show only their visits
+    # If aquarium_id is provided, show all visits for that aquarium (public)
+    if params[:aquarium_id].present?
+      visits = Visit.includes(:aquarium, :user, photos_attachments: :blob, videos_attachments: :blob)
+    elsif user_signed_in?
+      visits = current_user.visits.includes(:aquarium, photos_attachments: :blob, videos_attachments: :blob)
+    else
+      # Non-authenticated users with no filter get empty result
+      render json: { visits: [], pagination: nil }
+      return
+    end
 
     # 水族館でフィルター
     visits = visits.where(aquarium_id: params[:aquarium_id]) if params[:aquarium_id].present?
@@ -69,8 +80,15 @@ class Api::V1::VisitsController < Api::V1::BaseController
 
   # PATCH/PUT /api/v1/visits/:id
   def update
+    Rails.logger.debug "===== UPDATE VISIT DEBUG ====="
+    Rails.logger.debug "Params: #{params.inspect}"
+    Rails.logger.debug "visit_params: #{visit_params.inspect}"
+    Rails.logger.debug "good_exhibits_list param: #{params[:visit][:good_exhibits_list].inspect}"
+
     if @visit.update(visit_params)
       attach_media(@visit)
+      Rails.logger.debug "After update - good_exhibits: #{@visit.good_exhibits}"
+      Rails.logger.debug "After update - good_exhibits_list: #{@visit.good_exhibits_list.inspect}"
       render json: serialize_visit_detail(@visit)
     else
       render json: { errors: @visit.errors.full_messages }, status: :unprocessable_entity
@@ -137,10 +155,17 @@ class Api::V1::VisitsController < Api::V1::BaseController
           name: visit.aquarium.name,
           address: visit.aquarium.address
         },
+        user: visit.user ? {
+          id: visit.user.id,
+          name: visit.user.name,
+          username: visit.user.username,
+          avatarUrl: visit.user.avatar.attached? ? rails_blob_url(visit.user.avatar, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http') : nil
+        } : nil,
         visitedAt: visit.visited_at,
         weather: visit.weather,
         rating: visit.rating,
         memo: visit.memo&.truncate(100),
+        goodExhibits: visit.good_exhibits_list,
         photoUrls: visit.photos.limit(3).map { |p|
           rails_blob_url(p, host: default_url_options[:host], port: default_url_options[:port], protocol: 'http')
         },

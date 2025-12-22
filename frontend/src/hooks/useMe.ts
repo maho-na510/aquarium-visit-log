@@ -8,6 +8,8 @@ export type MeResponse = {
     username: string;
     email: string;
     role: 'admin' | 'user';
+    avatar_url?: string;
+    avatarUrl?: string;
   };
 };
 

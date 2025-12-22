@@ -93,6 +93,7 @@ export default function VisitForm({ open, onClose, aquariumId, visitId, initialD
     mutationFn: (data: VisitFormType) => visitService.createVisit(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
+      queryClient.invalidateQueries({ queryKey: ['aquarium-visits'] });
       handleClose();
     },
     onError: (_error: any) => {
@@ -104,6 +105,7 @@ export default function VisitForm({ open, onClose, aquariumId, visitId, initialD
     mutationFn: (data: Partial<VisitFormType>) => visitService.updateVisit(visitId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
+      queryClient.invalidateQueries({ queryKey: ['aquarium-visits'] });
       handleClose();
     },
     onError: (_error: any) => {
@@ -178,6 +180,9 @@ export default function VisitForm({ open, onClose, aquariumId, visitId, initialD
       setError('水族館を選択してください');
       return;
     }
+
+    console.log('Submitting visit with data:', formData);
+    console.log('Good exhibits list:', formData.goodExhibitsList);
 
     if (isEditMode) {
       updateMutation.mutate(formData);
@@ -283,12 +288,6 @@ export default function VisitForm({ open, onClose, aquariumId, visitId, initialD
                   placeholder="展示名を入力"
                   value={exhibitInput}
                   onChange={(e) => setExhibitInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddExhibit();
-                    }
-                  }}
                 />
                 <Button variant="outlined" onClick={handleAddExhibit} startIcon={<AddIcon />}>
                   追加

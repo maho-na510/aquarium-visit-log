@@ -1,201 +1,82 @@
-import React, { useState } from 'react';
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import {
-  AppBar,
-  Box,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-  Typography,
-  Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Home as HomeIcon,
-  Map as MapIcon,
-  Pool as PoolIcon,
-  PhotoLibrary as PhotoLibraryIcon,
-  Star as StarIcon,
-  EmojiEvents as TrophyIcon,
-  Person as PersonIcon,
-  Logout as LogoutIcon,
-} from '@mui/icons-material';
+import { Box, Typography, Button, Container, Card, CardContent } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import { useNavigate } from 'react-router-dom';
+import { Pool as PoolIcon, PhotoLibrary as PhotoLibraryIcon, Star as StarIcon } from '@mui/icons-material';
 
-const drawerWidth = 240;
-
-const menuItems = [
-  { text: 'ホーム', icon: <HomeIcon />, path: '/' },
-  { text: '地図', icon: <MapIcon />, path: '/map' },
-  { text: '水族館一覧', icon: <PoolIcon />, path: '/aquariums' },
-  { text: '訪問記録', icon: <PhotoLibraryIcon />, path: '/visits' },
-  { text: '行きたいリスト', icon: <StarIcon />, path: '/wishlist' },
-  { text: 'ランキング', icon: <TrophyIcon />, path: '/rankings' },
-];
-
-export default function Layout() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+export default function HomePage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleProfileMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    // TODO: ログアウト処理
-    localStorage.removeItem('authToken');
-    navigate('/login');
-  };
-
-  const drawer = (
-    <Box>
-      <Toolbar>
-        <Typography variant="h6" noWrap sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-          🐠 水族館ログ
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              component={Link}
-              to={item.path}
-              selected={location.pathname === item.path}
-              onClick={() => isMobile && setMobileOpen(false)}
-              sx={{
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.light',
-                  color: 'white',
-                  '& .MuiListItemIcon-root': {
-                    color: 'white',
-                  },
-                },
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {menuItems.find(item => item.path === location.pathname)?.text || '水族館訪問記録'}
-          </Typography>
-          <IconButton
+    <Container maxWidth="lg">
+      <Box sx={{ mt: 4, mb: 6, textAlign: 'center' }}>
+        <Typography variant="h3" component="h1" gutterBottom>
+          🐠 水族館訪問記録
+        </Typography>
+        <Typography variant="h6" color="text.secondary" gutterBottom>
+          あなたの水族館訪問の思い出を記録しましょう
+        </Typography>
+        <Box sx={{ mt: 4 }}>
+          <Button
+            variant="contained"
             size="large"
-            edge="end"
-            aria-label="account of current user"
-            aria-haspopup="true"
-            onClick={handleProfileMenuOpen}
-            color="inherit"
+            onClick={() => navigate('/aquariums')}
+            sx={{ mr: 2 }}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>U</Avatar>
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleProfileMenuClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
+            水族館を探す
+          </Button>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => navigate('/visits')}
           >
-            <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/profile'); }}>
-              <ListItemIcon>
-                <PersonIcon fontSize="small" />
-              </ListItemIcon>
-              プロフィール
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <LogoutIcon fontSize="small" />
-              </ListItemIcon>
-              ログアウト
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-      >
-        <Drawer
-          variant={isMobile ? 'temporary' : 'permanent'}
-          open={isMobile ? mobileOpen : true}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
+            訪問記録を見る
+          </Button>
+        </Box>
       </Box>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: 8,
-        }}
-      >
-        <Outlet />
-      </Box>
-    </Box>
+
+      <Grid container spacing={3} sx={{ mt: 4 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+              <PoolIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                水族館を探す
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                全国の水族館情報を検索・閲覧できます
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+              <PhotoLibraryIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                訪問記録を残す
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                写真や評価、メモを記録して思い出を残せます
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+              <StarIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                行きたいリスト
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                気になる水族館をリストに追加して管理できます
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Container>
   );
 }

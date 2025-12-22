@@ -23,7 +23,18 @@ export const visitService = {
     per?: number;
   }): Promise<Visit[]> {
     try {
-      const response = await apiClient.get('/visits', { params });
+      // Convert camelCase to snake_case for Rails API
+      const apiParams: any = {};
+      if (params?.aquariumId) apiParams.aquarium_id = params.aquariumId;
+      if (params?.userId) apiParams.user_id = params.userId;
+      if (params?.q) apiParams.q = params.q;
+      if (params?.sort) apiParams.sort = params.sort;
+      if (params?.page) apiParams.page = params.page;
+      if (params?.per) apiParams.per = params.per;
+
+      const response = await apiClient.get('/visits', { params: apiParams });
+      console.log('API Response:', response.data);
+      console.log('Visits array:', response.data.visits);
       return response.data.visits || response.data;
     } catch (error: any) {
       // 404エラー（データなし）の場合は空配列を返す
@@ -59,8 +70,8 @@ export const visitService = {
 
     // 良かった展示
     if (data.goodExhibitsList) {
-      data.goodExhibitsList.forEach((exhibit, index) => {
-        formData.append(`visit[good_exhibits_list][${index}]`, exhibit);
+      data.goodExhibitsList.forEach((exhibit) => {
+        formData.append('visit[good_exhibits_list][]', exhibit);
       });
     }
 
@@ -103,8 +114,8 @@ export const visitService = {
         // 空配列を送信する場合
         formData.append('visit[good_exhibits_list][]', '');
       } else {
-        data.goodExhibitsList.forEach((exhibit, index) => {
-          formData.append(`visit[good_exhibits_list][${index}]`, exhibit);
+        data.goodExhibitsList.forEach((exhibit) => {
+          formData.append('visit[good_exhibits_list][]', exhibit);
         });
       }
     }
