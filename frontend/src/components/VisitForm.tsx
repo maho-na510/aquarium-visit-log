@@ -106,6 +106,10 @@ export default function VisitForm({ open, onClose, aquariumId, visitId, initialD
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
       queryClient.invalidateQueries({ queryKey: ['aquarium-visits'] });
+      // Invalidate the specific visit detail query to refresh detail page
+      if (visitId) {
+        queryClient.invalidateQueries({ queryKey: ['visit', visitId] });
+      }
       handleClose();
     },
     onError: (_error: any) => {

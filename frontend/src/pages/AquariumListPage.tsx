@@ -89,7 +89,7 @@ export default function AquariumListPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPrefecture, setSelectedPrefecture] = useState('');
-  const [sortBy, setSortBy] = useState<'rating' | 'visits' | ''>('');
+  const [sortBy, setSortBy] = useState<'rating' | 'visits' | 'prefecture' | ''>('prefecture');
   const [page, setPage] = useState(1);
 
   // ユーザー情報を取得
@@ -218,6 +218,7 @@ export default function AquariumListPage() {
                 label="並び替え"
               >
                 <MenuItem value="">デフォルト</MenuItem>
+                <MenuItem value="prefecture">都道府県順</MenuItem>
                 <MenuItem value="rating">評価順</MenuItem>
                 <MenuItem value="visits">訪問数順</MenuItem>
               </Select>

@@ -1,4 +1,5 @@
 class Api::V1::RankingsController < Api::V1::BaseController
+  include Rails.application.routes.url_helpers
   skip_before_action :authenticate_user!
   
   # GET /api/v1/rankings/most_visited
@@ -57,7 +58,11 @@ class Api::V1::RankingsController < Api::V1::BaseController
   end
   
   private
-  
+
+  def default_url_options
+    Rails.application.routes.default_url_options
+  end
+
   def serialize_rankings(aquariums, metric_type)
     aquariums.map.with_index do |aquarium, index|
       data = {
@@ -84,7 +89,14 @@ class Api::V1::RankingsController < Api::V1::BaseController
       
       # 最新の写真URL
       latest_visit = aquarium.visits.joins(:photos_attachments).last
-      data[:latest_photo_url] = latest_visit.photos.first.url if latest_visit&.photos&.any?
+      if latest_visit&.photos&.any?
+        data[:latest_photo_url] = rails_blob_url(
+          latest_visit.photos.first,
+          host: default_url_options[:host],
+          port: default_url_options[:port],
+          protocol: 'http'
+        )
+      end
       
       data
     end

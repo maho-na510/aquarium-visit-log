@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -45,6 +45,7 @@ import { useMe } from '../hooks/useMe';
 
 export default function VisitListPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: meData } = useMe();
   const isLoggedIn = !!meData?.user;
   const currentUserId = meData?.user?.id;
@@ -58,7 +59,7 @@ export default function VisitListPage() {
   const [formOpen, setFormOpen] = useState(false);
 
   // 訪問記録データを取得
-  const { data: visits, isLoading, error, refetch } = useQuery({
+  const { data: visits, isLoading, error } = useQuery({
     queryKey: ['visits', { q: searchQuery, aquarium: selectedAquarium, sort: sortBy }],
     queryFn: () =>
       visitService.getVisits({
@@ -88,21 +89,28 @@ export default function VisitListPage() {
     navigate(`/visits/${visitId}/edit`);
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: (visitId: number) => visitService.deleteVisit(visitId),
+    onSuccess: () => {
+      // Invalidate all visit-related queries to trigger re-fetch
+      queryClient.invalidateQueries({ queryKey: ['visits'] });
+      queryClient.invalidateQueries({ queryKey: ['aquarium-visits'] });
+      setDeleteDialogOpen(false);
+      setVisitToDelete(null);
+    },
+    onError: (error) => {
+      console.error('削除に失敗しました:', error);
+    },
+  });
+
   const handleDeleteClick = (visitId: number) => {
     setVisitToDelete(visitId);
     setDeleteDialogOpen(true);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (visitToDelete) {
-      try {
-        await visitService.deleteVisit(visitToDelete);
-        setDeleteDialogOpen(false);
-        setVisitToDelete(null);
-        refetch();
-      } catch (error) {
-        console.error('削除に失敗しました:', error);
-      }
+      deleteMutation.mutate(visitToDelete);
     }
   };
 
@@ -215,7 +223,7 @@ export default function VisitListPage() {
       <Grid container spacing={3}>
         {isLoading ? (
           Array.from({ length: 6 }).map((_, index) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+            <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={index}>
               <Card>
                 <Skeleton variant="rectangular" height={200} />
                 <CardContent>
@@ -227,7 +235,7 @@ export default function VisitListPage() {
           ))
         ) : visits && visits.length > 0 ? (
           visits.map((visit) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={visit.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={visit.id}>
               <Card>
                 {visit.photoUrls && visit.photoUrls.length > 0 ? (
                   <CardMedia

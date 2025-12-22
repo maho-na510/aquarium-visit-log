@@ -75,7 +75,8 @@ export default function Layout() {
   const logoutMutation = useMutation({
     mutationFn: () => apiClient.delete('/logout'),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['me'] });
+      // Clear all cached data on logout
+      queryClient.clear();
       navigate('/');
     },
   });

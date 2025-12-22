@@ -41,11 +41,13 @@ import {
 
 import { aquariumService } from '../services/aquariumService';
 import { visitService } from '../services/visitService';
+import { wishlistService } from '../services/wishlistService';
 import AquariumPhotoSection from '../components/aquarium/AquariumPhotoSection';
 import AquariumAllPhotosSection from '../components/aquarium/AquariumAllPhotosSection';
 import { useMe } from '../hooks/useMe';
 import apiClient from '../services/api';
 import VisitForm from '../components/VisitForm';
+import { useMutation } from '@tanstack/react-query';
 
 type OgImageResponse = {
   og_image_url?: string | null;
@@ -211,12 +213,46 @@ export default function AquariumDetailPage() {
     setInWishlist(Boolean(next));
   }, [aquarium]);
 
+  // Wishlist mutations
+  const addToWishlistMutation = useMutation({
+    mutationFn: () => wishlistService.addToWishlist({ aquariumId }),
+    onSuccess: () => {
+      setInWishlist(true);
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+      queryClient.invalidateQueries({ queryKey: ['aquarium', aquariumId] });
+    },
+  });
+
+  const removeFromWishlistMutation = useMutation({
+    mutationFn: async () => {
+      // Need to find the wishlist item ID first
+      const wishlistItems = await wishlistService.getWishlistItems();
+      const item = wishlistItems.find(item => item.aquarium.id === aquariumId);
+      if (item) {
+        await wishlistService.removeFromWishlist(item.id);
+      }
+    },
+    onSuccess: () => {
+      setInWishlist(false);
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+      queryClient.invalidateQueries({ queryKey: ['aquarium', aquariumId] });
+    },
+  });
+
   const handleBack = () => navigate('/aquariums');
   const handleAddVisit = () => setOpenVisitDialog(true);
 
   const handleToggleWishlist = () => {
-    // TODO: API繋ぐときはここで叩く
-    setInWishlist((v) => !v);
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+
+    if (inWishlist) {
+      removeFromWishlistMutation.mutate();
+    } else {
+      addToWishlistMutation.mutate();
+    }
   };
 
   const handleEdit = () => {

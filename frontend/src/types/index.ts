@@ -169,7 +169,7 @@ export interface SearchParams {
   q?: string;
   prefecture?: string;
   visited?: boolean;
-  sort?: 'rating' | 'visits' | 'distance';
+  sort?: 'rating' | 'visits' | 'distance' | 'prefecture';
   lat?: number;
   lng?: number;
   distance?: number;

@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Container, Alert, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { useQueryClient } from '@tanstack/react-query';
 import apiClient from '../services/api';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -14,6 +16,10 @@ export default function LoginPage() {
     setError(null);
     try {
       await apiClient.post('/login', { email, password });
+      // Invalidate user data and wait for re-fetch to complete
+      await queryClient.invalidateQueries({ queryKey: ['me'] });
+      // Also invalidate any user-specific data
+      await queryClient.invalidateQueries({ queryKey: ['visits'] });
       navigate('/');
     } catch (e: any) {
       setError(e?.response?.data?.error || 'ログインに失敗しました');
