@@ -3,8 +3,8 @@
 class Api::V1::AquariumsController < Api::V1::BaseController
   skip_before_action :authenticate_user!, only: [:index, :show, :search, :nearby, :og_image]
 
-  before_action :set_aquarium, only: [:show, :update, :destroy, :upload_photos, :destroy_photo, :og_image]
-  before_action :require_admin!, only: [:create, :update, :destroy, :upload_photos, :destroy_photo]
+  before_action :set_aquarium, only: [:show, :update, :destroy, :upload_photos, :destroy_photo, :og_image, :set_header_photo]
+  before_action :require_admin!, only: [:create, :update, :destroy, :upload_photos, :destroy_photo, :set_header_photo]
 
 
   # GET /api/v1/aquariums

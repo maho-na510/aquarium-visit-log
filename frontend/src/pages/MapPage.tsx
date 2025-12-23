@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -25,8 +25,6 @@ import {
 import {
   Menu as MenuIcon,
   Close as CloseIcon,
-  MyLocation as MyLocationIcon,
-  Pool as PoolIcon,
 } from '@mui/icons-material';
 import { aquariumService } from '../services/aquariumService';
 import { Aquarium } from '../types';
@@ -73,12 +71,12 @@ const UnvisitedIcon = L.icon({
   popupAnchor: [0, -40],
 });
 
-// 行きたいリストの水族館用アイコン（金色）
+// 行きたいリストの水族館用アイコン（ピンクのハート）
 const WishlistIcon = L.icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40">
-      <path fill="#ffc107" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-      <path fill="#fff" d="M12 7l1.5 3 3.5.5-2.5 2.5.5 3.5-3-1.5-3 1.5.5-3.5-2.5-2.5 3.5-.5z"/>
+      <path fill="#ec4899" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+      <path fill="#fff" d="M12 8.5c0.9-1 2.4-1 3.3 0 .5.5.7 1.1.7 1.7s-.2 1.2-.7 1.7L12 14.5l-3.3-2.6c-.5-.5-.7-1.1-.7-1.7s.2-1.2.7-1.7c0.9-1 2.4-1 3.3 0z"/>
     </svg>
   `),
   iconSize: [40, 40],
@@ -86,18 +84,45 @@ const WishlistIcon = L.icon({
   popupAnchor: [0, -40],
 });
 
-// ランキングTOP5の水族館用アイコン（金色の枠）
-const TopRankIcon = L.icon({
-  iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45">
-      <path fill="#ff9800" stroke="#ffc107" stroke-width="3" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-      <text x="12" y="12" font-size="10" fill="#fff" text-anchor="middle">TOP</text>
-    </svg>
-  `),
-  iconSize: [45, 45],
-  iconAnchor: [22.5, 45],
-  popupAnchor: [0, -45],
-});
+// 訪問数ランキングTOP5の水族館用アイコン（トロフィー）- ランク別に色を変える
+const getTopRankIcon = (rank: number) => {
+  let trophyColor: string;
+  switch (rank) {
+    case 1:
+      trophyColor = '#FFD700'; // Gold
+      break;
+    case 2:
+      trophyColor = '#C0C0C0'; // Silver
+      break;
+    case 3:
+      trophyColor = '#CD7F32'; // Bronze
+      break;
+    default:
+      trophyColor = '#FFFFFF'; // White (for 4th and 5th)
+  }
+
+  return L.icon({
+    iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="42" height="42">
+        <!-- Trophy cup -->
+        <path fill="${trophyColor}" stroke="#333" stroke-width="1.5" d="M14 8h20v12c0 5.5-4.5 10-10 10s-10-4.5-10-10V8z"/>
+        <!-- Left handle -->
+        <path fill="${trophyColor}" stroke="#333" stroke-width="1.5" d="M12 10h-4c-1 0-2 1-2 2v4c0 2 1.5 3.5 3.5 3.5H12V10z"/>
+        <!-- Right handle -->
+        <path fill="${trophyColor}" stroke="#333" stroke-width="1.5" d="M36 10h4c1 0 2 1 2 2v4c0 2-1.5 3.5-3.5 3.5H36V10z"/>
+        <!-- Base stand -->
+        <rect x="20" y="30" width="8" height="6" fill="${trophyColor}" stroke="#333" stroke-width="1.5"/>
+        <!-- Bottom base -->
+        <rect x="16" y="36" width="16" height="3" rx="1" fill="${trophyColor}" stroke="#333" stroke-width="1.5"/>
+        <!-- Rank number -->
+        <text x="24" y="20" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">${rank}</text>
+      </svg>
+    `),
+    iconSize: [42, 42],
+    iconAnchor: [21, 42],
+    popupAnchor: [0, -42],
+  });
+};
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
@@ -109,8 +134,8 @@ export default function MapPage() {
   const [showVisited, setShowVisited] = useState(true);
   const [showUnvisited, setShowUnvisited] = useState(true);
   const [showWishlist, setShowWishlist] = useState(true);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([35.6762, 139.6503]); // 東京
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [showRanking, setShowRanking] = useState(true);
+  const [mapCenter] = useState<[number, number]>([35.6762, 139.6503]); // 東京
 
   // 水族館データを取得
   const { data, isLoading, error } = useQuery({
@@ -124,39 +149,19 @@ export default function MapPage() {
     queryFn: () => aquariumService.getMostVisitedRanking({ limit: 5 }),
   });
 
-  // ユーザーの現在地を取得
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation([latitude, longitude]);
-          setMapCenter([latitude, longitude]);
-        },
-        (error) => {
-          console.error('位置情報の取得に失敗しました:', error);
-        }
-      );
-    }
-  }, []);
-
   const handleAquariumClick = (aquariumId: number) => {
     navigate(`/aquariums/${aquariumId}`);
   };
 
-  const handleMyLocation = () => {
-    if (userLocation) {
-      setMapCenter(userLocation);
-    } else {
-      alert('位置情報が取得できません');
-    }
-  };
-
   const getMarkerIcon = (aquarium: Aquarium) => {
-    // TOP5チェック
-    const isTop5 = rankingData?.rankings.some(r => r.id === aquarium.id && r.isTop5);
-    if (isTop5) return TopRankIcon;
-    
+    // TOP5チェック - ランクを取得（ランキング表示がONの場合のみ）
+    if (showRanking) {
+      const rankingItem = rankingData?.rankings.find(r => r.id === aquarium.id);
+      if (rankingItem && rankingItem.isTop5) {
+        return getTopRankIcon(rankingItem.rank);
+      }
+    }
+
     // その他の状態チェック
     if (aquarium.visited) return VisitedIcon;
     if (aquarium.inWishlist) return WishlistIcon;
@@ -227,13 +232,42 @@ export default function MapPage() {
             <Switch
               checked={showWishlist}
               onChange={(e) => setShowWishlist(e.target.checked)}
-              color="warning"
+              sx={{
+                '& .MuiSwitch-switchBase.Mui-checked': {
+                  color: '#ec4899',
+                },
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                  backgroundColor: '#ec4899',
+                },
+              }}
             />
           }
           label={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: 16, height: 16, bgcolor: '#ffc107', borderRadius: '50%' }} />
+              <Box sx={{ width: 16, height: 16, bgcolor: '#ec4899', borderRadius: '50%' }} />
               行きたいリスト
+            </Box>
+          }
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={showRanking}
+              onChange={(e) => setShowRanking(e.target.checked)}
+              sx={{
+                '& .MuiSwitch-switchBase.Mui-checked': {
+                  color: '#ff9800',
+                },
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                  backgroundColor: '#ff9800',
+                },
+              }}
+            />
+          }
+          label={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ width: 16, height: 16, bgcolor: '#FFD700', borderRadius: '2px' }} />
+              ランキング
             </Box>
           }
         />
@@ -241,13 +275,21 @@ export default function MapPage() {
 
       <Box sx={{ mt: 3 }}>
         <Typography variant="subtitle2" gutterBottom>
-          凡例
+          ランキング
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ width: 20, height: 20, bgcolor: '#ff9800', border: '2px solid #ffc107', borderRadius: '50%' }} />
-            <Typography variant="body2">ランキングTOP5</Typography>
-          </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            component="span"
+            sx={{
+              display: 'inline-block',
+              width: 20,
+              height: 20,
+              bgcolor: '#FFD700',
+              borderRadius: '2px',
+              border: '1px solid #333'
+            }}
+          />
+          <Typography variant="body2">訪問数TOP5</Typography>
         </Box>
       </Box>
 
@@ -278,21 +320,6 @@ export default function MapPage() {
         </IconButton>
       )}
 
-      {/* 現在地ボタン */}
-      <IconButton
-        onClick={handleMyLocation}
-        sx={{
-          position: 'absolute',
-          bottom: 16,
-          right: 16,
-          zIndex: 1000,
-          bgcolor: 'background.paper',
-          boxShadow: 1,
-        }}
-      >
-        <MyLocationIcon />
-      </IconButton>
-
       {/* サイドバー */}
       <Drawer
         variant={isMobile ? 'temporary' : 'persistent'}
@@ -320,21 +347,6 @@ export default function MapPage() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          
-          {/* 現在地マーカー */}
-          {userLocation && (
-            <Marker
-              position={userLocation}
-              icon={L.divIcon({
-                className: 'current-location-marker',
-                html: '<div style="width: 20px; height: 20px; background: #4285F4; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                iconSize: [20, 20],
-                iconAnchor: [10, 10],
-              })}
-            >
-              <Popup>現在地</Popup>
-            </Marker>
-          )}
 
           {/* 水族館マーカー */}
           {data?.aquariums

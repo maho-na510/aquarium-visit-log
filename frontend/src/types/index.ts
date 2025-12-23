@@ -144,6 +144,8 @@ export interface RankingItem {
   visitCount?: number;
   averageRating?: number;
   ratingCount?: number;
+  recentVisitCount?: number;
+  wishlistCount?: number;
   isTop5: boolean;
   latestPhotoUrl?: string;
   latestVisit?: string;

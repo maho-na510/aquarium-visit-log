@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :visit do
-    user { nil }
-    aquarium { nil }
-    visited_at { "2025-07-06" }
-    memo { "MyText" }
-    rating { 1 }
+    association :user
+    association :aquarium
+    visited_at { Faker::Date.between(from: 1.year.ago, to: Date.today) }
+    memo { Faker::Lorem.paragraph }
+    rating { rand(1..5) }
   end
 end

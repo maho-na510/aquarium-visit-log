@@ -138,4 +138,34 @@ export const aquariumService = {
     const response = await apiClient.get('/rankings/highest_rated', { params });
     return response.data;
   },
+
+  // トレンドランキング（最近人気）
+  async getTrendingRanking(params?: {
+    days?: number;
+    prefecture?: string;
+    limit?: number;
+  }): Promise<RankingsResponse> {
+    const response = await apiClient.get('/rankings/trending', { params });
+    return response.data;
+  },
+
+  // 行きたいリストチャンピオン
+  async getWishlistChampionsRanking(params?: {
+    prefecture?: string;
+    limit?: number;
+  }): Promise<RankingsResponse> {
+    const response = await apiClient.get('/rankings/wishlist_champions', { params });
+    return response.data;
+  },
+
+  // 隠れた名所
+  async getHiddenGemsRanking(params?: {
+    minRating?: number;
+    maxVisits?: number;
+    prefecture?: string;
+    limit?: number;
+  }): Promise<RankingsResponse> {
+    const response = await apiClient.get('/rankings/hidden_gems', { params });
+    return response.data;
+  },
 };

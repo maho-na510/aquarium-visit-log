@@ -41,6 +41,9 @@ Rails.application.routes.draw do
       # ランキング
       get 'rankings/most_visited', to: 'rankings#most_visited'
       get 'rankings/highest_rated', to: 'rankings#highest_rated'
+      get 'rankings/trending', to: 'rankings#trending'
+      get 'rankings/wishlist_champions', to: 'rankings#wishlist_champions'
+      get 'rankings/hidden_gems', to: 'rankings#hidden_gems'
     end
   end
 
