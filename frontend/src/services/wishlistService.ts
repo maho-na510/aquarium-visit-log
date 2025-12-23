@@ -2,7 +2,7 @@ import apiClient from './api';
 import { WishlistItem } from '../types';
 
 interface WishlistItemsResponse {
-  wishlist_items: WishlistItem[];
+  wishlistItems: WishlistItem[];  // Changed to camelCase because axios interceptor converts it
   pagination?: {
     currentPage: number;
     nextPage: number | null;
@@ -26,7 +26,7 @@ export const wishlistService = {
   }): Promise<WishlistItem[]> {
     try {
       const response = await apiClient.get<WishlistItemsResponse>('/wishlist_items', { params });
-      return response.data.wishlist_items || [];
+      return response.data.wishlistItems || [];  // Changed to camelCase
     } catch (error: any) {
       if (error.response?.status === 404) {
         return [];
