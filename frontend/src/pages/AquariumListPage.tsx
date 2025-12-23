@@ -20,9 +20,10 @@ import {
   Button,
 } from '@mui/material';
 import {
+  Anchor as AnchorIcon,
   Search as SearchIcon,
   LocationOn as LocationIcon,
-  Pool as PoolIcon,
+  AddPhotoAlternate as AddPhotoAlternateIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -156,7 +157,7 @@ export default function AquariumListPage() {
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <PoolIcon fontSize="large" />
+            <AnchorIcon fontSize="large" />
             水族館一覧
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -280,7 +281,7 @@ export default function AquariumListPage() {
                         justifyContent: 'center',
                       }}
                     >
-                      <PoolIcon sx={{ fontSize: 48, color: 'grey.400' }} />
+                      <AddPhotoAlternateIcon sx={{ fontSize: 48, color: 'grey.400' }} />
                     </Box>
                   )}
                 <CardContent sx={{ flexGrow: 1, p: 2 }}>
@@ -334,7 +335,7 @@ export default function AquariumListPage() {
       {/* データがない場合 */}
       {data && data.aquariums.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 8 }}>
-          <PoolIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
+          <AddPhotoAlternateIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             水族館が見つかりませんでした
           </Typography>

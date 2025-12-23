@@ -24,9 +24,9 @@ import {
   Menu as MenuIcon,
   Home as HomeIcon,
   Map as MapIcon,
-  Pool as PoolIcon,
+  Anchor as AnchorIcon,
   PhotoLibrary as PhotoLibraryIcon,
-  Star as StarIcon,
+  Favorite as FavoriteIcon,
   EmojiEvents as TrophyIcon,
   Person as PersonIcon,
   Logout as LogoutIcon,
@@ -42,9 +42,9 @@ const drawerWidth = 240;
 const menuItems = [
   { text: 'ホーム', icon: <HomeIcon />, path: '/' },
   { text: '地図', icon: <MapIcon />, path: '/map' },
-  { text: '水族館一覧', icon: <PoolIcon />, path: '/aquariums' },
+  { text: '水族館一覧', icon: <AnchorIcon />, path: '/aquariums' },
   { text: '訪問記録', icon: <PhotoLibraryIcon />, path: '/visits' },
-  { text: '行きたいリスト', icon: <StarIcon />, path: '/wishlist' },
+  { text: '行きたいリスト', icon: <FavoriteIcon />, path: '/wishlist' },
   { text: 'ランキング', icon: <TrophyIcon />, path: '/rankings' },
 ];
 

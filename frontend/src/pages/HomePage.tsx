@@ -1,7 +1,7 @@
 import { Box, Typography, Button, Container, Card, CardContent } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useNavigate } from 'react-router-dom';
-import { Pool as PoolIcon, PhotoLibrary as PhotoLibraryIcon, Star as StarIcon } from '@mui/icons-material';
+import { Anchor as AnchorIcon, PhotoLibrary as PhotoLibraryIcon, Star as StarIcon } from '@mui/icons-material';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ export default function HomePage() {
         <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <PoolIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+              <AnchorIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
                 水族館を探す
               </Typography>

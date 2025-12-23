@@ -27,7 +27,8 @@ import {
   Edit as EditIcon,
   Star as StarIcon,
   LocationOn as LocationIcon,
-  Pool as PoolIcon,
+  Anchor as AnchorIcon,
+  AddPhotoAlternate,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -177,7 +178,7 @@ export default function WishlistPage() {
                   }}
                   onClick={() => navigate(`/aquariums/${item.aquarium.id}`)}
                 >
-                  <PoolIcon sx={{ fontSize: 60, color: 'grey.400' }} />
+                  <AddPhotoAlternate sx={{ fontSize: 60, color: 'grey.400' }} />
                 </CardMedia>
                 <CardContent>
                   <Typography

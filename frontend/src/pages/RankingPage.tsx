@@ -22,7 +22,7 @@ import {
   Diamond as DiamondIcon,
   People as PeopleIcon,
   LocationOn as LocationIcon,
-  Pool as PoolIcon,
+  AddPhotoAlternate
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -141,7 +141,7 @@ export default function RankingsPage() {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          <PoolIcon sx={{ fontSize: 60, color: 'grey.400' }} />
+          <AddPhotoAlternate sx={{ fontSize: 60, color: 'grey.400' }} />
         )}
       </CardMedia>
       <CardContent sx={{ flex: 1 }}>

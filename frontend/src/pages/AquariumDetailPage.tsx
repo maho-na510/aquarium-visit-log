@@ -32,7 +32,6 @@ import {
   Favorite as FavoriteIcon,
   FavoriteBorder as FavoriteBorderIcon,
   AddPhotoAlternate as AddPhotoIcon,
-  Pool as PoolIcon,
   Star as StarIcon,
   CalendarToday as CalendarIcon,
   PhotoCamera as PhotoIcon,
@@ -305,7 +304,7 @@ export default function AquariumDetailPage() {
           backgroundPosition: 'center',
         }}
       >
-        {!headerImageUrl && <PoolIcon sx={{ fontSize: 100, color: 'grey.400' }} />}
+        {!headerImageUrl && <AddPhotoIcon sx={{ fontSize: 100, color: 'grey.400' }} />}
 
         <IconButton
           onClick={handleBack}
