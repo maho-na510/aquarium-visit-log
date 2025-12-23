@@ -109,7 +109,7 @@ export default function AquariumListPage() {
       prefecture: selectedPrefecture,
       sort: sortBy || undefined,
       page,
-      per: 12,
+      per: 20,
     }),
   });
 
@@ -228,13 +228,13 @@ export default function AquariumListPage() {
       </Box>
 
       {/* 水族館一覧 */}
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {isLoading ? (
           // スケルトンローディング
-          Array.from({ length: 6 }).map((_, index) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+          Array.from({ length: 10 }).map((_, index) => (
+            <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={index}>
               <Card>
-                <Skeleton variant="rectangular" height={200} />
+                <Skeleton variant="rectangular" height={160} />
                 <CardContent>
                   <Skeleton variant="text" />
                   <Skeleton variant="text" width="60%" />
@@ -247,10 +247,13 @@ export default function AquariumListPage() {
             const imageUrl = getAquariumImageUrl(aquarium);
 
             return (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={aquarium.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={aquarium.id}>
                 <Card
                   sx={{
                     cursor: 'pointer',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
                     transition: 'transform 0.2s, box-shadow 0.2s',
                     '&:hover': {
                       transform: 'translateY(-4px)',
@@ -262,50 +265,49 @@ export default function AquariumListPage() {
                   {imageUrl ? (
                     <CardMedia
                       component="img"
-                      height="200"
+                      height="160"
                       image={imageUrl}
                       alt={aquarium.name}
+                      sx={{ objectFit: 'cover' }}
                     />
                   ) : (
                     <Box
                       sx={{
-                        height: 200,
+                        height: 160,
                         bgcolor: 'grey.200',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
                     >
-                      <PoolIcon sx={{ fontSize: 60, color: 'grey.400' }} />
+                      <PoolIcon sx={{ fontSize: 48, color: 'grey.400' }} />
                     </Box>
                   )}
-                <CardContent>
-                  <Typography variant="h6" component="h2" gutterBottom>
+                <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                  <Typography variant="subtitle1" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 1 }}>
                     {aquarium.name}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                    <LocationIcon fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary">
-                      {aquarium.prefecture} {aquarium.address}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                    <LocationIcon fontSize="small" color="action" sx={{ fontSize: 16 }} />
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      {aquarium.prefecture}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Rating value={Number((aquarium as any).averageRating || (aquarium as any).average_rating || 0)} readOnly size="small" precision={0.5} />
-                      <Typography variant="body2" color="text.secondary">
-                        ({Number((aquarium as any).averageRating || (aquarium as any).average_rating || 0).toFixed(1)})
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      訪問数: {(aquarium as any).visitCount || (aquarium as any).visit_count || 0}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                    <Rating value={Number((aquarium as any).averageRating || (aquarium as any).average_rating || 0)} readOnly size="small" precision={0.5} sx={{ fontSize: '1rem' }} />
+                    <Typography variant="caption" color="text.secondary">
+                      ({Number((aquarium as any).averageRating || (aquarium as any).average_rating || 0).toFixed(1)})
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                    訪問数: {(aquarium as any).visitCount || (aquarium as any).visit_count || 0}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                     {aquarium.visited && (
-                      <Chip label="訪問済み" size="small" color="success" />
+                      <Chip label="訪問済み" size="small" color="success" sx={{ height: 20, fontSize: '0.7rem' }} />
                     )}
                     {aquarium.inWishlist && (
-                      <Chip label="行きたい" size="small" color="primary" />
+                      <Chip label="行きたい" size="small" color="primary" sx={{ height: 20, fontSize: '0.7rem' }} />
                     )}
                   </Box>
                 </CardContent>
