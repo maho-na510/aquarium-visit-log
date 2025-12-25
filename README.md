@@ -1,18 +1,20 @@
 # Aquarium Visit Log
+# 水族館訪問記録アプリ
 
-A full-stack web application for tracking and managing visits to aquariums across Japan. Users can log their visits, rate aquariums, upload photos, create wishlists, and explore aquariums on an interactive map.
+全国の水族館への訪問を記録・管理するフルスタックWebアプリケーション。訪問記録の作成、水族館の評価、写真のアップロード、行きたいリストの作成、インタラクティブマップでの水族館探索が可能です。
 
-## Features
+## 主な機能
 
-- User authentication (registration, login, logout)
-- Aquarium database with detailed information
-- Visit logging with ratings, comments, and photo uploads
-- Wishlist functionality with priority and notes
-- Interactive map view with customizable markers
-- Rankings (most visited, highest rated)
-- Prefecture-based filtering and sorting
-- Photo gallery with header photo selection
-- Responsive design for mobile and desktop
+- ユーザー認証（登録、ログイン、ログアウト）
+- ユーザーの権限によって機能を制限
+- 詳細な水族館データベース
+- 評価・コメント・写真付きの訪問記録
+- 優先度とメモ付きの行きたいリスト
+- カスタマイズ可能なマーカー付きインタラクティブマップ
+- ランキング機能（訪問数、評価、トレンド、行きたいリストチャンピオン、隠れた名所）
+- 都道府県フィルタリング・ソート機能
+- ヘッダー写真選択機能付きフォトギャラリー
+- モバイル・デスクトップ対応レスポンシブデザイン
 
 ## Tech Stack
 
@@ -44,14 +46,14 @@ A full-stack web application for tracking and managing visits to aquariums acros
 - Docker
 - Docker Compose
 
-That's it! All other dependencies are managed within Docker containers.
+以上.その他の依存関係はすべてDockerコンテナ内で管理されます。
 
-## Getting Started
+## セットアップ手順
 
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/maho-na510/aquarium-visit-log.git
 cd aquarium-visit-log
 ```
 
@@ -67,7 +69,6 @@ This command will:
 - Install all dependencies
 - Start the development servers
 
-**Note**: The first build may take several minutes to complete.
 
 ### 3. Set up the database
 
@@ -148,7 +149,7 @@ docker compose down
 
 ### Rebuilding containers
 
-If you make changes to Dockerfiles or dependencies:
+Dockerfileや依存関係を変更した場合：
 
 ```bash
 docker compose down
@@ -263,34 +264,35 @@ aquarium-visit-log/
 - `GET /api/v1/rankings/most_visited` - Most visited aquariums
 - `GET /api/v1/rankings/highest_rated` - Highest rated aquariums
 
-## Troubleshooting
+## トラブルシューティング
 
-### Port already in use
+### ポートが既に使用されている
 
-If you get a "port already in use" error, either:
-- Stop the conflicting service
-- Change the port in docker-compose.yml
+「ポートが既に使用されています」エラーが表示された場合：
+- 競合しているサービスを停止する
+- docker-compose.ymlでポートを変更する
 
-### Database connection errors
+### データベース接続エラー
 
 ```bash
-# Wait for MySQL to be ready, then:
+# MySQLの起動を待ってから実行
 docker compose exec backend rails db:create db:migrate
 ```
 
-### Frontend hot-reload not working
+### フロントエンドのホットリロードが動作しない
 
-The `CHOKIDAR_USEPOLLING=true` environment variable should handle this. If issues persist:
+`CHOKIDAR_USEPOLLING=true`環境変数で対処されるはずです。
+問題が続く場合：
 
 ```bash
 docker compose down
 docker compose up
 ```
 
-### Permission errors on volumes
+### volumesの権限エラー
 
 ```bash
-# On Linux/Mac, ensure proper permissions
+# Linux/Macで適切な権限を確保する
 sudo chown -R $USER:$USER .
 ```
 
@@ -302,10 +304,3 @@ sudo chown -R $USER:$USER .
 4. Test thoroughly
 5. Submit a pull request
 
-## License
-
-This project is private and proprietary.
-
-## Support
-
-For issues or questions, please open an issue in the repository.
